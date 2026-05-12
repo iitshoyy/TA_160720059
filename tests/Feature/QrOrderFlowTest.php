@@ -13,13 +13,13 @@ class QrOrderFlowTest extends TestCase
 
     public function test_qr_order_is_created_unpaid_and_occupies_table(): void
     {
-        $table     = $this->makeTable();
-        $menu      = $this->makeMenuWithRecipe();
+        $table = $this->makeTable();
+        $menu = $this->makeMenuWithRecipe();
         $invBefore = (float) Inventory::first()->quantity_on_hand;
 
         $resp = $this->postJson(route('customer.order.store'), [
             'table_id' => $table->id,
-            'items'    => [
+            'items' => [
                 ['menu_id' => $menu->id, 'quantity' => 3, 'price' => 10000, 'subtotal' => 30000],
             ],
             'notes' => 'no chili',
@@ -42,11 +42,11 @@ class QrOrderFlowTest extends TestCase
     public function test_status_page_and_state_endpoint_work(): void
     {
         $table = $this->makeTable();
-        $menu  = $this->makeMenuWithRecipe();
+        $menu = $this->makeMenuWithRecipe();
 
         $this->postJson(route('customer.order.store'), [
             'table_id' => $table->id,
-            'items'    => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
+            'items' => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
         ])->assertOk();
         $order = Order::firstOrFail();
 
@@ -64,17 +64,17 @@ class QrOrderFlowTest extends TestCase
     {
         $kasir = $this->makeUser('Kasir');
         $table = $this->makeTable();
-        $menu  = $this->makeMenuWithRecipe();
+        $menu = $this->makeMenuWithRecipe();
 
         $this->postJson(route('customer.order.store'), [
             'table_id' => $table->id,
-            'items'    => [['menu_id' => $menu->id, 'quantity' => 2, 'price' => 10000, 'subtotal' => 20000]],
+            'items' => [['menu_id' => $menu->id, 'quantity' => 2, 'price' => 10000, 'subtotal' => 20000]],
         ])->assertOk();
         $order = Order::firstOrFail(); // total = round(20000 * 1.11) = 22200
 
         $resp = $this->actingAs($kasir)->patch(route('orders.collect-payment', $order->id), [
             'payment_type' => 'Cash',
-            'amount_paid'  => 25000,
+            'amount_paid' => 25000,
         ]);
         $resp->assertRedirect();
         $resp->assertSessionHas('success');
@@ -94,10 +94,10 @@ class QrOrderFlowTest extends TestCase
     {
         $kasir = $this->makeUser('Kasir');
         $table = $this->makeTable();
-        $menu  = $this->makeMenuWithRecipe();
+        $menu = $this->makeMenuWithRecipe();
         $this->postJson(route('customer.order.store'), [
             'table_id' => $table->id,
-            'items'    => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
+            'items' => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
         ])->assertOk();
         $order = Order::firstOrFail(); // total 11100
 
@@ -113,10 +113,10 @@ class QrOrderFlowTest extends TestCase
     {
         $kasir = $this->makeUser('Kasir');
         $table = $this->makeTable();
-        $menu  = $this->makeMenuWithRecipe();
+        $menu = $this->makeMenuWithRecipe();
         $this->postJson(route('customer.order.store'), [
             'table_id' => $table->id,
-            'items'    => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
+            'items' => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
         ])->assertOk();
         $order = Order::firstOrFail();
 
@@ -134,12 +134,12 @@ class QrOrderFlowTest extends TestCase
 
     public function test_collect_payment_requires_kasir_or_admin(): void
     {
-        $chef  = $this->makeUser('Chef');
+        $chef = $this->makeUser('Chef');
         $table = $this->makeTable();
-        $menu  = $this->makeMenuWithRecipe();
+        $menu = $this->makeMenuWithRecipe();
         $this->postJson(route('customer.order.store'), [
             'table_id' => $table->id,
-            'items'    => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
+            'items' => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
         ])->assertOk();
         $order = Order::firstOrFail();
 
@@ -147,5 +147,8 @@ class QrOrderFlowTest extends TestCase
             ->patch(route('orders.collect-payment', $order->id), ['payment_type' => 'Cash', 'amount_paid' => 20000])
             ->assertForbidden();
         $this->assertSame('pending', $order->fresh()->status);
+
+        $this->actingAs($this->makeUser('Admin'))->patch(route('orders.collect-payment', $order->id), ['payment_type' => 'Cash', 'amount_paid' => 20000])->assertRedirect();
+        $this->assertSame('processing', $order->fresh()->status);
     }
 }

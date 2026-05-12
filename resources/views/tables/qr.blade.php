@@ -43,7 +43,7 @@
             <li>Scan this QR code with your phone camera</li>
             <li>Browse the menu and select items</li>
             <li>Tap <strong>Place Order</strong></li>
-            <li>Your order goes directly to the kitchen!</li>
+            <li>Pay at the cashier — your order starts once payment is confirmed</li>
         </ol>
     </div>
 

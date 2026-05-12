@@ -78,6 +78,7 @@ Route::middleware(['auth', 'role:Admin,Chef'])->group(function () {
 // ---------- Floor management: Admin + Kasir ----------
 // Kasir owns the host-stand workflow: tables and reservations.
 Route::middleware(['auth', 'role:Admin,Kasir'])->group(function () {
+    Route::get('/tables/qr-sheet', [TableController::class, 'qrSheet'])->name('tables.qr-sheet');
     Route::resource('tables', TableController::class);
     Route::get('/tables/{id}/qr', [TableController::class, 'generateQR'])->name('tables.qr');
     Route::resource('reservations', ReservationController::class);

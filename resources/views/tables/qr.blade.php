@@ -23,79 +23,16 @@
     <div class="table-name">{{ $table->name }}</div>
     <div class="cap">Capacity: {{ $table->capacity }} pax</div>
 
+    @php $appHost = parse_url(config('app.url'), PHP_URL_HOST); @endphp
+    @if(in_array($appHost, ['localhost', '127.0.0.1', null], true))
+    <div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 12px;font-size:.78rem;margin-bottom:14px;text-align:left;">
+        <strong>Heads up:</strong> APP_URL is <code>{{ config('app.url') }}</code> — a phone can't reach that.
+        Set <code>APP_URL=http://&lt;your-LAN-IP&gt;:8000</code> in <code>.env</code>, run <code>php artisan optimize:clear</code>, and serve with <code>php artisan serve --host=0.0.0.0</code>.
+    </div>
+    @endif
+
     <div class="qr-wrap">
-        <!-- QR code placeholder - in production use simplesoftwareio/simple-qrcode -->
-        <svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
-            <rect width="180" height="180" fill="white"/>
-            <!-- Finder patterns -->
-            <rect x="10" y="10" width="50" height="50" fill="black"/>
-            <rect x="16" y="16" width="38" height="38" fill="white"/>
-            <rect x="22" y="22" width="26" height="26" fill="black"/>
-            <rect x="120" y="10" width="50" height="50" fill="black"/>
-            <rect x="126" y="16" width="38" height="38" fill="white"/>
-            <rect x="132" y="22" width="26" height="26" fill="black"/>
-            <rect x="10" y="120" width="50" height="50" fill="black"/>
-            <rect x="16" y="126" width="38" height="38" fill="white"/>
-            <rect x="22" y="132" width="26" height="26" fill="black"/>
-            <!-- Data modules (simplified) -->
-            <rect x="70" y="10" width="6" height="6" fill="black"/>
-            <rect x="82" y="10" width="6" height="6" fill="black"/>
-            <rect x="94" y="10" width="6" height="6" fill="black"/>
-            <rect x="106" y="10" width="6" height="6" fill="black"/>
-            <rect x="70" y="22" width="6" height="6" fill="black"/>
-            <rect x="82" y="22" width="6" height="6" fill="black"/>
-            <rect x="106" y="22" width="6" height="6" fill="black"/>
-            <rect x="70" y="34" width="6" height="6" fill="black"/>
-            <rect x="94" y="34" width="6" height="6" fill="black"/>
-            <rect x="106" y="34" width="6" height="6" fill="black"/>
-            <rect x="70" y="46" width="6" height="6" fill="black"/>
-            <rect x="82" y="46" width="6" height="6" fill="black"/>
-            <rect x="94" y="46" width="6" height="6" fill="black"/>
-            <rect x="10" y="70" width="6" height="6" fill="black"/>
-            <rect x="22" y="70" width="6" height="6" fill="black"/>
-            <rect x="46" y="70" width="6" height="6" fill="black"/>
-            <rect x="70" y="70" width="6" height="6" fill="black"/>
-            <rect x="82" y="70" width="6" height="6" fill="black"/>
-            <rect x="94" y="70" width="6" height="6" fill="black"/>
-            <rect x="118" y="70" width="6" height="6" fill="black"/>
-            <rect x="130" y="70" width="6" height="6" fill="black"/>
-            <rect x="154" y="70" width="6" height="6" fill="black"/>
-            <rect x="10" y="82" width="6" height="6" fill="black"/>
-            <rect x="34" y="82" width="6" height="6" fill="black"/>
-            <rect x="58" y="82" width="6" height="6" fill="black"/>
-            <rect x="82" y="82" width="6" height="6" fill="black"/>
-            <rect x="106" y="82" width="6" height="6" fill="black"/>
-            <rect x="130" y="82" width="6" height="6" fill="black"/>
-            <rect x="154" y="82" width="6" height="6" fill="black"/>
-            <rect x="70" y="94" width="6" height="6" fill="black"/>
-            <rect x="82" y="94" width="6" height="6" fill="black"/>
-            <rect x="118" y="94" width="6" height="6" fill="black"/>
-            <rect x="142" y="94" width="6" height="6" fill="black"/>
-            <rect x="70" y="106" width="6" height="6" fill="black"/>
-            <rect x="94" y="106" width="6" height="6" fill="black"/>
-            <rect x="118" y="106" width="6" height="6" fill="black"/>
-            <rect x="130" y="106" width="6" height="6" fill="black"/>
-            <rect x="154" y="106" width="6" height="6" fill="black"/>
-            <rect x="70" y="118" width="6" height="6" fill="black"/>
-            <rect x="82" y="118" width="6" height="6" fill="black"/>
-            <rect x="106" y="118" width="6" height="6" fill="black"/>
-            <rect x="118" y="118" width="6" height="6" fill="black"/>
-            <rect x="142" y="118" width="6" height="6" fill="black"/>
-            <rect x="70" y="130" width="6" height="6" fill="black"/>
-            <rect x="94" y="130" width="6" height="6" fill="black"/>
-            <rect x="106" y="130" width="6" height="6" fill="black"/>
-            <rect x="130" y="130" width="6" height="6" fill="black"/>
-            <rect x="70" y="142" width="6" height="6" fill="black"/>
-            <rect x="82" y="142" width="6" height="6" fill="black"/>
-            <rect x="106" y="142" width="6" height="6" fill="black"/>
-            <rect x="118" y="142" width="6" height="6" fill="black"/>
-            <rect x="142" y="142" width="6" height="6" fill="black"/>
-            <rect x="154" y="142" width="6" height="6" fill="black"/>
-            <rect x="70" y="154" width="6" height="6" fill="black"/>
-            <rect x="94" y="154" width="6" height="6" fill="black"/>
-            <rect x="118" y="154" width="6" height="6" fill="black"/>
-            <rect x="154" y="154" width="6" height="6" fill="black"/>
-        </svg>
+        {!! $qr !!}
     </div>
 
     <div class="url">{{ $url }}</div>

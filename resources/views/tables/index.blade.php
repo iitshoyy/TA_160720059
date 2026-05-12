@@ -5,6 +5,7 @@
 @section('content')
 <div class="page-header">
     <div><h1>Tables</h1><p>Manage dining tables and generate QR codes</p></div>
+    <a href="{{ route('tables.qr-sheet') }}" class="btn btn-outline" target="_blank"><i class="fas fa-qrcode"></i> Print all QR codes</a>
     <button class="btn btn-gold" onclick="openModal('addTableModal')"><i class="fas fa-plus"></i> Add Table</button>
 </div>
 

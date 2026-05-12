@@ -56,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:Admin,Kasir'])->group(function () {
     Route::get('/orders/create',  [OrderController::class, 'create'])->name('orders.create');
     Route::post('/orders',        [OrderController::class, 'store'])->name('orders.store');
+    Route::patch('/orders/{id}/collect-payment', [OrderController::class, 'collectPayment'])->name('orders.collect-payment');
 });
 
 // ---------- Sales floor: Admin, Kasir, Chef ----------

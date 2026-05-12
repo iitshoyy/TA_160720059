@@ -19,12 +19,12 @@ abstract class TestCase extends BaseTestCase
     protected function makeUser(string $roleName): User
     {
         $role = Role::firstOrCreate(['name' => $roleName]);
-        $u    = uniqid();
+        $u = uniqid();
 
         return User::create([
-            'name'     => $roleName.' User',
+            'name' => $roleName.' User',
             'username' => strtolower($roleName).'_'.$u,
-            'email'    => strtolower($roleName).'_'.$u.'@test.local',
+            'email' => strtolower($roleName).'_'.$u.'@test.local',
             'password' => bcrypt('password'),
             'roles_id' => $role->id,
         ]);
@@ -34,9 +34,9 @@ abstract class TestCase extends BaseTestCase
     protected function makeTable(): Table
     {
         return Table::create([
-            'name'     => 'T-'.uniqid(),
+            'name' => 'T-'.uniqid(),
             'capacity' => 4,
-            'status'   => 'available',
+            'status' => 'available',
         ]);
     }
 
@@ -46,31 +46,31 @@ abstract class TestCase extends BaseTestCase
      */
     protected function makeMenuWithRecipe(): Menu
     {
-        $cat  = CategoryMenu::firstOrCreate(['name' => 'Main']);
+        $cat = CategoryMenu::firstOrCreate(['name' => 'Main']);
         $menu = Menu::create([
-            'name'             => 'Nasi Goreng '.uniqid(),
-            'availability'     => 1,
-            'price'            => 10000,
+            'name' => 'Nasi Goreng '.uniqid(),
+            'availability' => 1,
+            'price' => 10000,
             'categoryMenus_id' => $cat->id,
         ]);
 
         $type = IngridientType::firstOrCreate(['name' => 'Dry']);
-        $ing  = Ingridient::create([
-            'name'                => 'Rice '.uniqid(),
-            'unit'                => 'g',
-            'cost_per_unit'       => 10,
-            'min_stock'           => 10,
+        $ing = Ingridient::create([
+            'name' => 'Rice '.uniqid(),
+            'unit' => 'g',
+            'cost_per_unit' => 10,
+            'min_stock' => 10,
             'ingridient_types_id' => $type->id,
         ]);
         Inventory::create([
-            'ingridient_id'    => $ing->id,
+            'ingridient_id' => $ing->id,
             'quantity_on_hand' => 100,
-            'last_updated'     => now(),
+            'last_updated' => now(),
         ]);
         Component::create([
-            'menus_id'       => $menu->id,
+            'menus_id' => $menu->id,
             'ingridients_id' => $ing->id,
-            'quantity'       => 2,
+            'quantity' => 2,
         ]);
 
         return $menu;

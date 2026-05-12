@@ -40,8 +40,8 @@ class TableController extends Controller
     public function generateQR($id)
     {
         $table = Table::findOrFail($id);
-        $url   = route('customer.order', ['tableId' => $id]);
-        $qr    = QrCode::format('svg')->size(220)->margin(1)->generate($url);
+        $url = route('customer.order', ['tableId' => $id]);
+        $qr = QrCode::format('svg')->size(220)->margin(1)->generate($url);
 
         return view('tables.qr', compact('table', 'url', 'qr'));
     }

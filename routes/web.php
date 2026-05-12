@@ -36,6 +36,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/order/table/{tableId}',   [CustomerOrderController::class, 'show'])->name('customer.order');
 Route::post('/order/table/place',      [CustomerOrderController::class, 'store'])->name('customer.order.store');
+Route::get('/order/status/{id}',       [CustomerOrderController::class, 'status'])->name('customer.order.status');
+Route::get('/order/status/{id}/state', [CustomerOrderController::class, 'statusState'])->name('customer.order.status.state');
 Route::get('/reserve',                  [ReservationController::class, 'publicForm'])->name('reservation.public');
 Route::post('/reserve',                 [ReservationController::class, 'publicStore'])->name('reservation.public.store');
 

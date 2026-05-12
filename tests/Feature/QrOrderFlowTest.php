@@ -38,4 +38,25 @@ class QrOrderFlowTest extends TestCase
         $this->assertEqualsWithDelta($invBefore, (float) Inventory::first()->quantity_on_hand, 0.001); // not deducted yet
         $resp->assertJsonPath('status_url', route('customer.order.status', $order->id));
     }
+
+    public function test_status_page_and_state_endpoint_work(): void
+    {
+        $table = $this->makeTable();
+        $menu  = $this->makeMenuWithRecipe();
+
+        $this->postJson(route('customer.order.store'), [
+            'table_id' => $table->id,
+            'items'    => [['menu_id' => $menu->id, 'quantity' => 1, 'price' => 10000, 'subtotal' => 10000]],
+        ])->assertOk();
+        $order = Order::firstOrFail();
+
+        $this->get(route('customer.order.status', $order->id))
+            ->assertOk()
+            ->assertSee('Order #'.str_pad((string) $order->id, 4, '0', STR_PAD_LEFT))
+            ->assertSee('cashier'); // the "pay at the cashier" copy
+
+        $this->getJson(route('customer.order.status.state', $order->id))
+            ->assertOk()
+            ->assertJsonPath('status', 'pending');
+    }
 }

@@ -132,8 +132,23 @@ Visit: **http://localhost:8000**
 To generate and print QR codes for tables:
 1. Login as Admin
 2. Go to **Table Management**
-3. Click **QR Code** button on any table
+3. Click **QR Code** button on any table (or **Print all QR codes** for a one-page sheet of every table)
 4. Print the QR page and place it on the table
+
+---
+
+## 📶 Letting customers scan the table QR codes (LAN demo)
+
+The QR codes encode `APP_URL`. The default `APP_URL=http://localhost:8000` is **not reachable from a phone**, so the QR won't work until you point it at an address the phone can hit:
+
+1. Find your computer's LAN IP (Windows: `ipconfig` → e.g. `192.168.1.23`).
+2. In `.env`, set `APP_URL=http://192.168.1.23:8000` (use your own IP).
+3. Run `php artisan optimize:clear`.
+4. Start the server bound to all interfaces: `php artisan serve --host=0.0.0.0 --port=8000`.
+5. Connect the phone to the **same Wi-Fi network**.
+6. In the app, open **Tables → QR** (a single table) or **Tables → Print all QR codes**, then scan with the phone camera. (The QR page shows a warning while `APP_URL` is still `localhost`.)
+
+End-to-end flow: the customer's phone shows the menu → places the order → is taken to a status page telling them to **pay at the cashier** → the kasir opens the order in **Orders**, clicks **Collect Payment**, records the method and amount received → the order moves to **Processing** and the phone's status page updates automatically.
 
 ---
 
@@ -227,9 +242,9 @@ tail -f storage/logs/laravel.log
 - Check DB credentials in `.env`
 - Ensure `restaurant_pos` database exists
 
-**QR code shows SVG placeholder:**
-- Install the QR package: `composer require simplesoftwareio/simple-qrcode`
-- Update `tables/qr.blade.php` to use `{!! QrCode::size(200)->generate($url) !!}`
+**Phone can't scan the table QR code:**
+- It's almost always `APP_URL`. See *"Letting customers scan the table QR codes (LAN demo)"* above — set `APP_URL` to your machine's LAN IP, run `php artisan optimize:clear`, and serve with `php artisan serve --host=0.0.0.0`.
+- The QR page shows a red warning banner whenever `APP_URL` points at `localhost`/`127.0.0.1`.
 
 ---
 

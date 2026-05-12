@@ -74,13 +74,15 @@
                     </td>
                     <td>{{ $order->orderDetails->count() ?? 0 }} items</td>
                     <td style="font-weight:600;">Rp {{ number_format($order->total_amount) }}</td>
-                    <td>{{ $order->payment_type ?? 'Cash' }}</td>
+                    <td>{{ $order->payment_date ? $order->payment_type : 'Unpaid' }}</td>
                     <td><span class="status status-{{ $order->status }}">{{ ucfirst($order->status) }}</span></td>
                     <td style="font-size:0.78rem; color:var(--muted);">{{ \Carbon\Carbon::parse($order->order_date)->format('d/m H:i') }}</td>
                     <td>
                         <div style="display:flex; gap:6px;">
                             <a href="{{ route('orders.show', $order->id) }}" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
-                            @if($order->status === 'pending')
+                            @if($order->status === 'pending' && $order->payment_date === null)
+                            <a href="{{ route('orders.show', $order->id) }}" class="btn btn-success btn-sm" title="Collect payment"><i class="fas fa-cash-register"></i></a>
+                            @elseif($order->status === 'pending')
                             <form method="POST" action="{{ route('orders.update-status', $order->id) }}">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="status" value="processing">

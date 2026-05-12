@@ -50,13 +50,41 @@
                 <div><span style="color:var(--muted);">Type</span><br><span>{{ ucfirst(str_replace('-',' ',$order->order_type)) }}</span></div>
                 <div><span style="color:var(--muted);">Customer</span><br><span>{{ $order->customer_name ?? 'Walk-in' }}</span></div>
                 @if($order->table)<div><span style="color:var(--muted);">Table</span><br><span>{{ $order->table->name }}</span></div>@endif
-                <div><span style="color:var(--muted);">Payment</span><br><span>{{ ucfirst($order->payment_type ?? 'Cash') }}</span></div>
+                <div><span style="color:var(--muted);">Payment</span><br><span>{{ $order->payment_date ? ucfirst($order->payment_type) : 'Unpaid — collect at cashier' }}</span></div>
                 @if($order->amount_paid)<div><span style="color:var(--muted);">Amount Paid</span><br><span>Rp {{ number_format($order->amount_paid) }}</span></div>@endif
                 @if($order->notes)<div><span style="color:var(--muted);">Notes</span><br><span>{{ $order->notes }}</span></div>@endif
             </div>
         </div>
 
-        @if(in_array($order->status,['pending','processing']))
+        @if($order->status === 'pending' && $order->payment_date === null)
+        <div class="card">
+            <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:14px;">Collect Payment</h3>
+            <form method="POST" action="{{ route('orders.collect-payment',$order->id) }}" id="payForm">
+                @csrf @method('PATCH')
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label class="form-label">Method</label>
+                    <select name="payment_type" class="form-control" required>
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                        <option value="QRIS">QRIS</option>
+                        <option value="Transfer">Transfer</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label class="form-label">Amount received (total: Rp {{ number_format($order->total_amount) }})</label>
+                    <input type="number" name="amount_paid" class="form-control" min="{{ $order->total_amount }}" step="1" value="{{ old('amount_paid', $order->total_amount) }}" required oninput="document.getElementById('changeOut').textContent = 'Change: Rp ' + Math.max(0, this.value - {{ $order->total_amount }}).toLocaleString('id-ID')">
+                </div>
+                <div id="changeOut" style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">Change: Rp 0</div>
+                @error('amount_paid')<div style="color:#dc2626;font-size:.8rem;margin-bottom:10px;">{{ $message }}</div>@enderror
+                <button class="btn btn-success" style="width:100%;justify-content:center;"><i class="fas fa-cash-register"></i> Confirm Payment → Processing</button>
+            </form>
+            <form method="POST" action="{{ route('orders.update-status',$order->id) }}" style="margin-top:8px;">
+                @csrf @method('PATCH')
+                <input type="hidden" name="status" value="cancelled">
+                <button class="btn btn-danger" style="width:100%;justify-content:center;"><i class="fas fa-times"></i> Cancel Order</button>
+            </form>
+        </div>
+        @elseif(in_array($order->status,['pending','processing']))
         <div class="card">
             <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:14px;">Update Status</h3>
             <div style="display:flex;flex-direction:column;gap:8px;">

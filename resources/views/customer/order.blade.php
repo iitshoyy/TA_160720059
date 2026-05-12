@@ -178,23 +178,6 @@
             background: var(--bg);
         }
         .notes-input:focus { outline: none; border-color: var(--gold); }
-        .success-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: var(--success);
-            z-index: 200;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            text-align: center;
-            padding: 40px;
-        }
-        .success-overlay.show { display: flex; }
-        .success-icon { font-size: 5rem; margin-bottom: 20px; }
-        .success-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; }
-        .success-sub { font-size: 0.9rem; opacity: 0.85; }
     </style>
 </head>
 <body>
@@ -269,16 +252,6 @@
     </div>
 </div>
 
-<!-- Success Screen -->
-<div class="success-overlay" id="successOverlay">
-    <div class="success-icon">✅</div>
-    <div class="success-title">Order Placed!</div>
-    <div class="success-sub" id="successMsg">Your order is being prepared. The staff will bring it to your table shortly.</div>
-    <button onclick="resetPage()" style="margin-top:30px; padding:12px 30px; border:2px solid #fff; background:transparent; color:#fff; border-radius:50px; font-size:0.95rem; cursor:pointer; font-family:inherit; font-weight:600;">
-        Order More
-    </button>
-</div>
-
 <script>
 let cart = {};
 
@@ -343,32 +316,25 @@ async function submitOrder() {
     const items = Object.values(cart).map(i => ({ menu_id: i.id, quantity: i.qty, price: i.price, subtotal: i.price * i.qty }));
     if (items.length === 0) return;
 
-    const resp = await fetch('{{ route("customer.order.store") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-        body: JSON.stringify({
-            table_id: {{ $table->id ?? 'null' }},
-            items,
-            notes: document.getElementById('orderNotes').value,
-            order_type: 'dine-in'
-        })
-    });
-
-    if (resp.ok) {
-        closeCart();
-        document.getElementById('successOverlay').classList.add('show');
-    } else {
-        alert('Failed to place order. Please try again.');
+    try {
+        const resp = await fetch('{{ route("customer.order.store") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            body: JSON.stringify({
+                table_id: {{ $table->id ?? 'null' }},
+                items,
+                notes: document.getElementById('orderNotes').value
+            })
+        });
+        if (resp.ok) {
+            const data = await resp.json();
+            window.location.href = data.status_url;
+        } else {
+            alert('Failed to place order. Please try again or call our staff.');
+        }
+    } catch (e) {
+        alert('Network error. Please try again.');
     }
-}
-
-function resetPage() {
-    cart = {};
-    document.querySelectorAll('[id^="qty-"]').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('[id^="minus-"]').forEach(el => el.style.display = 'none');
-    document.getElementById('cartFloat').classList.remove('visible');
-    document.getElementById('successOverlay').classList.remove('show');
-    updateCartUI();
 }
 </script>
 </body>

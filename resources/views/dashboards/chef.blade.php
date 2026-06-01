@@ -11,12 +11,12 @@
         margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
     }
     .kds-col-head h3 {
-        font-family: 'Playfair Display', serif; color: var(--cream);
-        font-size: 1.05rem; display: flex; align-items: center; gap: 10px;
+        color: var(--cream); font-weight: 600;
+        font-size: 1rem; display: flex; align-items: center; gap: 10px;
     }
     .kds-counter {
         background: var(--surface2); border: 1px solid var(--border);
-        padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; color: var(--muted);
+        padding: 2px 8px; font-size: 0.75rem; color: var(--muted);
     }
     @media (max-width: 900px) { .kds-columns { grid-template-columns: 1fr; } }
 </style>
@@ -32,26 +32,22 @@
         tone="warning"
         label="Pending Tickets"
         value="{{ $pendingCount }}"
-        sub="Waiting to start"
-        icon="fas fa-hourglass-start" />
+        sub="Waiting to start" />
     <x-stat-card
         tone="info"
         label="Now Preparing"
         value="{{ $processingCount }}"
-        sub="On the line"
-        icon="fas fa-fire-burner" />
+        sub="On the line" />
     <x-stat-card
         tone="success"
         label="Completed Today"
         value="{{ $completedToday }}"
-        sub="Sent out"
-        icon="fas fa-check-double" />
+        sub="Sent out" />
     <x-stat-card
         tone="danger"
         label="Low-Stock Ingredients"
         value="{{ $lowStock->count() }}"
-        sub="Check before service"
-        icon="fas fa-triangle-exclamation" />
+        sub="Check before service" />
 </div>
 
 <div class="kds-columns">

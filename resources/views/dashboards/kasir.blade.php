@@ -18,26 +18,22 @@
     <x-stat-card
         label="My Transactions Today"
         value="{{ $myTodayCount }}"
-        sub="Orders processed by you"
-        icon="fas fa-receipt" />
+        sub="Orders processed by you" />
     <x-stat-card
         tone="success"
         label="My Sales Today"
         value="Rp {{ number_format($myTodayTotal) }}"
-        sub="Completed and paid"
-        icon="fas fa-coins" />
+        sub="Completed and paid" />
     <x-stat-card
         tone="warning"
         label="Awaiting Payment"
         value="{{ $awaitingPay }}"
-        sub="Open tabs to close"
-        icon="fas fa-hourglass-half" />
+        sub="Open tabs to close" />
     <x-stat-card
         tone="info"
         label="Tables Available"
         value="{{ $availTables }}"
-        sub="Ready to seat new guests"
-        icon="fas fa-chair" />
+        sub="Ready to seat new guests" />
 </div>
 
 <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:20px;">
@@ -55,7 +51,7 @@
                     <tr>
                         <td>#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</td>
                         <td>
-                            <div style="color:var(--cream);">{{ $order->table->name ?? 'Takeaway' }}</div>
+                            <div class="text-cream">{{ $order->table->name ?? 'Takeaway' }}</div>
                             <div style="font-size:0.75rem; color:var(--muted);">{{ $order->customer_name }}</div>
                         </td>
                         <td>Rp {{ number_format($order->total_amount) }}</td>

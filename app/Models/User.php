@@ -28,4 +28,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Employee::class, 'users_id');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'users_id');
+    }
 }

@@ -4,25 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Reservation — RestoPOS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f2ec;min-height:100vh}
-        .hero{background:#1a1814;color:#fff;padding:48px 20px;text-align:center}
-        .hero-title{font-family:'Playfair Display',serif;font-size:2rem;color:#c9a84c;margin-bottom:8px}
-        .hero-sub{color:#8a7d6b;font-size:.9rem}
-        .container{max-width:600px;margin:0 auto;padding:32px 20px}
-        .card{background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
-        .form-group{margin-bottom:18px}
-        label{display:block;font-size:.78rem;color:#6b6455;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:500}
-        input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid #e8e0d0;border-radius:10px;font-size:.9rem;font-family:inherit;transition:border-color .15s;color:#2c2416;background:#faf8f4}
-        input:focus,select:focus,textarea:focus{outline:none;border-color:#c9a84c;background:#fff}
-        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-        .btn{width:100%;padding:14px;background:#c9a84c;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
-        .btn:hover{background:#b8960a}
-        .success{background:#d4edda;border:1px solid #c3e6cb;color:#155724;padding:16px;border-radius:10px;margin-bottom:20px;font-size:.875rem}
-        .section-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:#2c2416;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #e8e0d0}
-        .info-box{background:#faf8f4;border:1px solid #e8e0d0;border-radius:10px;padding:16px;margin-bottom:20px;font-size:.82rem;color:#6b6455;line-height:1.7}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f5f2ec;color:#2c2416;min-height:100vh;font-size:14px}
+        .hero{background:#1a1814;color:#fff;padding:32px 20px;text-align:center}
+        .hero-title{font-size:1.4rem;color:#c9a84c;margin-bottom:4px;font-weight:700}
+        .hero-sub{color:#8a7d6b;font-size:.85rem}
+        .container{max-width:560px;margin:0 auto;padding:24px 16px}
+        .card{background:#fff;border:1px solid #e8e0d0;padding:24px}
+        .form-group{margin-bottom:14px}
+        label{display:block;font-size:.82rem;color:#6b6455;margin-bottom:4px}
+        input,select,textarea{width:100%;padding:8px 12px;border:1px solid #e8e0d0;font-size:.9rem;font-family:inherit;color:#2c2416;background:#fff}
+        input:focus,select:focus,textarea:focus{outline:none;border-color:#c9a84c}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .btn{width:100%;padding:10px;background:#c9a84c;color:#000;border:1px solid #c9a84c;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
+        .btn:hover{background:#b8960a;border-color:#b8960a}
+        .success{color:#155724;border:1px solid #155724;padding:10px 14px;margin-bottom:16px;font-size:.875rem}
+        .section-title{font-size:1.05rem;color:#2c2416;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #e8e0d0;font-weight:600}
+        .info-box{border:1px solid #e8e0d0;padding:12px;margin-bottom:16px;font-size:.82rem;color:#6b6455;line-height:1.6}
         @media(max-width:480px){.form-row{grid-template-columns:1fr}}
     </style>
 </head>

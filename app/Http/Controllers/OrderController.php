@@ -37,47 +37,67 @@ class OrderController extends Controller
 
     public function store(Request $req)
     {
-        $req->validate([
+        $data = $req->validate([
             'order_type' => 'required|in:dine-in,takeaway,pre-order',
             'items' => 'required|json',
-            'payment_type' => 'required',
+            'payment_type' => 'required|in:Cash,Card,QRIS,Transfer',
+            'table_id' => 'nullable|exists:tables,id',
+            'amount_paid' => 'nullable|numeric|min:0',
+            'customer_name' => 'nullable|string|max:255',
         ]);
 
-        $items = json_decode($req->items, true);
+        $items = json_decode($data['items'], true);
+        if (! is_array($items) || count($items) === 0) {
+            return back()->withErrors(['items' => 'Please add at least one item to the order.'])->withInput();
+        }
+        foreach ($items as $item) {
+            if (! isset($item['menu_id'], $item['quantity'], $item['price'], $item['subtotal'])) {
+                return back()->withErrors(['items' => 'Invalid cart payload.'])->withInput();
+            }
+        }
+
         $subtotal = collect($items)->sum('subtotal');
         $tax = $subtotal * 0.11;
-        $total = $subtotal + $tax;
+        $total = round($subtotal + $tax);
 
-        $order = Order::create([
-            'order_date' => now(),
-            'total_amount' => round($total),
-            'users_id' => Auth::id(),
-            'users_roles_id' => Auth::user()->roles_id,
-            'table_id' => $req->table_id ?: null,
-            'order_type' => $req->order_type,
-            'payment_type' => $req->payment_type,
-            'payment_date' => now(),
-            'amount_paid' => $req->amount_paid,
-            'customer_name' => $req->customer_name ?: 'Walk-in',
-            'status' => 'pending',
-        ]);
+        if ($data['order_type'] === 'dine-in' && empty($data['table_id'])) {
+            return back()->withErrors(['table_id' => 'Pick a table for dine-in orders.'])->withInput();
+        }
 
-        foreach ($items as $item) {
-            OrderDetail::create([
-                'orders_id' => $order->id,
-                'menus_id' => $item['menu_id'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'subtotal' => $item['subtotal'],
+        $order = DB::transaction(function () use ($data, $items, $total) {
+            $order = Order::create([
+                'order_date' => now(),
+                'total_amount' => $total,
+                'users_id' => Auth::id(),
+                'users_roles_id' => Auth::user()->roles_id,
+                'table_id' => $data['table_id'] ?? null,
+                'order_type' => $data['order_type'],
+                'payment_type' => $data['payment_type'],
+                'payment_date' => now(),
+                'amount_paid' => $data['amount_paid'] ?? null,
+                'customer_name' => $data['customer_name'] ?? 'Walk-in',
+                'status' => 'pending',
             ]);
-        }
 
-        if ($req->table_id) {
-            Table::where('id', $req->table_id)->update(['status' => 'occupied']);
-        }
+            foreach ($items as $item) {
+                OrderDetail::create([
+                    'orders_id' => $order->id,
+                    'menus_id' => $item['menu_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'subtotal' => $item['subtotal'],
+                ]);
+            }
 
-        // POS path: payment is collected upfront, so inventory is deducted immediately at order creation.
-        $this->deductInventory($items);
+            if (! empty($data['table_id'])) {
+                Table::where('id', $data['table_id'])->update(['status' => 'occupied']);
+            }
+
+            // POS path: payment is collected upfront, so inventory is deducted immediately at order creation.
+            $this->deductInventory($items);
+
+            return $order;
+        });
 
         return redirect()->route('orders.receipt', $order->id)->with('success', 'Order placed successfully!');
     }

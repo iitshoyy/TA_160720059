@@ -64,7 +64,7 @@
             <tbody>
                 @forelse($orders ?? [] as $order)
                 <tr>
-                    <td style="color:var(--gold); font-weight:600;">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td class="text-gold fw-600">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</td>
                     <td>{{ $order->customer->name ?? $order->customer_name ?? 'Walk-in' }}</td>
                     <td>
                         <span style="font-size:0.78rem;">{{ $order->table->name ?? '' }}</span><br>
@@ -101,7 +101,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="9" style="text-align:center; color:var(--muted); padding:40px;">No orders found</td></tr>
+                <x-empty-state colspan="9" icon="fas fa-receipt" message="No orders found" />
                 @endforelse
             </tbody>
         </table>

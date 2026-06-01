@@ -32,7 +32,11 @@ class TableController extends Controller
 
     public function destroy($id)
     {
-        Table::findOrFail($id)->delete();
+        $table = Table::findOrFail($id);
+        if ($table->orders()->exists() || $table->reservations()->exists()) {
+            return back()->with('error', 'Cannot delete "'.$table->name.'" — it has order or reservation history.');
+        }
+        $table->delete();
 
         return back()->with('success', 'Table deleted!');
     }

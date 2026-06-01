@@ -15,10 +15,10 @@
             <tbody>
                 @forelse($purchaseOrders as $po)
                 <tr>
-                    <td style="color:var(--gold);font-weight:600;">#{{ str_pad($po->id,4,'0',STR_PAD_LEFT) }}</td>
-                    <td style="font-weight:500;">{{ $po->supplier->name }}</td>
+                    <td class="text-gold fw-600">#{{ str_pad($po->id,4,'0',STR_PAD_LEFT) }}</td>
+                    <td class="fw-500">{{ $po->supplier->name }}</td>
                     <td>{{ \Carbon\Carbon::parse($po->order_date)->format('d/m/Y') }}</td>
-                    <td style="color:var(--muted);">{{ $po->expected_date ? \Carbon\Carbon::parse($po->expected_date)->format('d/m/Y') : '-' }}</td>
+                    <td class="text-muted">{{ $po->expected_date ? \Carbon\Carbon::parse($po->expected_date)->format('d/m/Y') : '-' }}</td>
                     <td>{{ $po->items->count() }} items</td>
                     <td style="font-weight:600;">Rp {{ number_format($po->total_amount) }}</td>
                     <td><span class="status status-{{ $po->status==='received'?'completed':($po->status==='pending'?'pending':'processing') }}">{{ ucfirst($po->status) }}</span></td>
@@ -34,7 +34,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:40px;">No purchase orders yet</td></tr>
+                <x-empty-state colspan="8" icon="fas fa-file-invoice" message="No purchase orders yet" />
                 @endforelse
             </tbody>
         </table>
@@ -76,7 +76,7 @@
                         <button type="button" class="btn btn-danger btn-sm" onclick="removePORow(this)" style="margin-bottom:0;"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
-                <div style="text-align:right;margin-top:10px;font-size:.95rem;"><strong>Total: <span id="poTotal" style="color:var(--gold);">Rp 0</span></strong></div>
+                <div style="text-align:right;margin-top:10px;font-size:.95rem;"><strong>Total: <span id="poTotal" class="text-gold">Rp 0</span></strong></div>
             </div>
         </div>
         <div class="modal-footer">

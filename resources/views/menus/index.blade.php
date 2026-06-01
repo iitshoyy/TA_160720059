@@ -29,9 +29,9 @@
             <tbody>
                 @forelse($menus as $menu)
                 <tr>
-                    <td style="font-weight:500;color:var(--cream);">{{ $menu->name }}</td>
+                    <td class="fw-500 text-cream">{{ $menu->name }}</td>
                     <td>{{ $menu->category->name ?? '-' }}</td>
-                    <td style="color:var(--gold);font-weight:600;">Rp {{ number_format($menu->price) }}</td>
+                    <td class="text-gold fw-600">Rp {{ number_format($menu->price) }}</td>
                     <td>
                         <form method="POST" action="{{ route('menus.toggle',$menu->id) }}">@csrf @method('PATCH')
                             <button type="submit" class="status {{ $menu->availability?'status-available':'status-cancelled' }}" style="background:none;border:none;cursor:pointer;padding:3px 10px;">
@@ -49,7 +49,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px;">No menu items found</td></tr>
+                <x-empty-state colspan="5" icon="fas fa-utensils" message="No menu items found" />
                 @endforelse
             </tbody>
         </table>

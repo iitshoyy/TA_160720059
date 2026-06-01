@@ -2,7 +2,6 @@
     'label' => '',
     'value' => '',
     'sub' => null,
-    'icon' => 'fas fa-chart-line',
     'tone' => 'gold', // gold | success | info | warning | danger
 ])
 
@@ -12,5 +11,4 @@
     @if($sub)
         <div class="stat-sub">{{ $sub }}</div>
     @endif
-    <i class="{{ $icon }} stat-icon"></i>
 </div>

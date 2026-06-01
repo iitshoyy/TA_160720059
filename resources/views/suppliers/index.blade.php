@@ -15,7 +15,7 @@
             <tbody>
                 @forelse($suppliers as $s)
                 <tr>
-                    <td style="font-weight:600;color:var(--cream);">{{ $s->name }}</td>
+                    <td class="fw-600 text-cream">{{ $s->name }}</td>
                     <td>{{ $s->phone ?? '-' }}</td>
                     <td>{{ $s->email ?? '-' }}</td>
                     <td style="max-width:180px;font-size:.82rem;color:var(--muted);">{{ Str::limit($s->address,50) ?? '-' }}</td>
@@ -30,7 +30,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px;">No suppliers yet</td></tr>
+                <x-empty-state colspan="6" icon="fas fa-truck" message="No suppliers yet" />
                 @endforelse
             </tbody>
         </table>

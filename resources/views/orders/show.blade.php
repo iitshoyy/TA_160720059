@@ -17,17 +17,17 @@
 <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
     <div>
         <div class="card" style="margin-bottom:20px;">
-            <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:16px;">Order Items</h3>
+            <h3 style="color:var(--cream);margin-bottom:16px;">Order Items</h3>
             <div class="table-wrap">
                 <table>
                     <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr></thead>
                     <tbody>
                         @foreach($order->orderDetails as $d)
                         <tr>
-                            <td style="font-weight:500;">{{ $d->menu->name ?? 'Deleted item' }}</td>
+                            <td class="fw-500">{{ $d->menu->name ?? 'Deleted item' }}</td>
                             <td>Rp {{ number_format($d->price) }}</td>
                             <td>{{ $d->quantity }}</td>
-                            <td style="color:var(--gold);font-weight:600;">Rp {{ number_format($d->subtotal) }}</td>
+                            <td class="text-gold fw-600">Rp {{ number_format($d->subtotal) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -44,21 +44,21 @@
 
     <div>
         <div class="card" style="margin-bottom:16px;">
-            <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:14px;">Order Info</h3>
+            <h3 style="color:var(--cream);margin-bottom:14px;">Order Info</h3>
             <div style="display:flex;flex-direction:column;gap:10px;font-size:.875rem;">
-                <div><span style="color:var(--muted);">Status</span><br><span class="status status-{{ $order->status }}">{{ ucfirst($order->status) }}</span></div>
-                <div><span style="color:var(--muted);">Type</span><br><span>{{ ucfirst(str_replace('-',' ',$order->order_type)) }}</span></div>
-                <div><span style="color:var(--muted);">Customer</span><br><span>{{ $order->customer_name ?? 'Walk-in' }}</span></div>
-                @if($order->table)<div><span style="color:var(--muted);">Table</span><br><span>{{ $order->table->name }}</span></div>@endif
-                <div><span style="color:var(--muted);">Payment</span><br><span>{{ $order->payment_date ? ucfirst($order->payment_type) : 'Unpaid — collect at cashier' }}</span></div>
-                @if($order->amount_paid)<div><span style="color:var(--muted);">Amount Paid</span><br><span>Rp {{ number_format($order->amount_paid) }}</span></div>@endif
-                @if($order->notes)<div><span style="color:var(--muted);">Notes</span><br><span>{{ $order->notes }}</span></div>@endif
+                <div><span class="text-muted">Status</span><br><span class="status status-{{ $order->status }}">{{ ucfirst($order->status) }}</span></div>
+                <div><span class="text-muted">Type</span><br><span>{{ ucfirst(str_replace('-',' ',$order->order_type)) }}</span></div>
+                <div><span class="text-muted">Customer</span><br><span>{{ $order->customer_name ?? 'Walk-in' }}</span></div>
+                @if($order->table)<div><span class="text-muted">Table</span><br><span>{{ $order->table->name }}</span></div>@endif
+                <div><span class="text-muted">Payment</span><br><span>{{ $order->payment_date ? ucfirst($order->payment_type) : 'Unpaid — collect at cashier' }}</span></div>
+                @if($order->amount_paid)<div><span class="text-muted">Amount Paid</span><br><span>Rp {{ number_format($order->amount_paid) }}</span></div>@endif
+                @if($order->notes)<div><span class="text-muted">Notes</span><br><span>{{ $order->notes }}</span></div>@endif
             </div>
         </div>
 
         @if($order->status === 'pending' && $order->payment_date === null)
         <div class="card">
-            <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:14px;">Collect Payment</h3>
+            <h3 style="color:var(--cream);margin-bottom:14px;">Collect Payment</h3>
             <form method="POST" action="{{ route('orders.collect-payment',$order->id) }}" id="payForm">
                 @csrf @method('PATCH')
                 <div class="form-group" style="margin-bottom:10px;">
@@ -86,7 +86,7 @@
         </div>
         @elseif(in_array($order->status,['pending','processing']))
         <div class="card">
-            <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:14px;">Update Status</h3>
+            <h3 style="color:var(--cream);margin-bottom:14px;">Update Status</h3>
             <div style="display:flex;flex-direction:column;gap:8px;">
                 @if($order->status==='pending')
                 <form method="POST" action="{{ route('orders.update-status',$order->id) }}">

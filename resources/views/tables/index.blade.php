@@ -11,9 +11,9 @@
 
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
     @forelse($tables as $table)
-    <div style="background:var(--surface);border:1px solid {{ $table->status==='available'?'#27ae60':($table->status==='occupied'?'#c0392b':'#2980b9') }};border-radius:14px;padding:20px;position:relative;">
-        <div style="font-size:2.5rem;text-align:center;margin-bottom:10px;">🪑</div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);text-align:center;font-weight:600;">{{ $table->name }}</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid {{ $table->status==='available'?'#27ae60':($table->status==='occupied'?'#c0392b':'#2980b9') }};padding:16px;position:relative;">
+        <div style="font-size:1.8rem;text-align:center;margin-bottom:6px;">🪑</div>
+        <div style="font-size:1rem;color:var(--cream);text-align:center;font-weight:600;">{{ $table->name }}</div>
         <div style="text-align:center;color:var(--muted);font-size:.8rem;margin-bottom:10px;">Capacity: {{ $table->capacity }} pax</div>
         <div style="text-align:center;margin-bottom:14px;"><span class="status status-{{ $table->status }}">{{ ucfirst($table->status) }}</span></div>
         <div style="display:flex;gap:6px;flex-direction:column;">

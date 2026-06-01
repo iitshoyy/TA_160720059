@@ -7,6 +7,7 @@ use App\Models\IngridientType;
 use App\Models\Inventory;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller {
     public function index() {
@@ -41,7 +42,14 @@ class InventoryController extends Controller {
     }
 
     public function destroy($id) {
-        Ingridient::findOrFail($id)->delete();
+        $ing = Ingridient::findOrFail($id);
+        if ($ing->components()->exists()) {
+            return back()->with('error', 'Cannot delete "'.$ing->name.'" — it is used in a recipe. Remove it from menus first.');
+        }
+        DB::transaction(function () use ($ing) {
+            $ing->inventories()->delete();
+            $ing->delete();
+        });
         return back()->with('success','Ingredient deleted!');
     }
 }

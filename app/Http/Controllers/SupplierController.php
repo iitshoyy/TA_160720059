@@ -23,7 +23,11 @@ class SupplierController extends Controller {
     }
 
     public function destroy($id) {
-        Supplier::findOrFail($id)->delete();
+        $s = Supplier::withCount(['ingridients','purchaseOrders'])->findOrFail($id);
+        if ($s->ingridients_count > 0 || $s->purchase_orders_count > 0) {
+            return back()->with('error', 'Cannot delete "'.$s->name.'" — it is linked to ingredients or purchase orders.');
+        }
+        $s->delete();
         return back()->with('success','Supplier deleted!');
     }
 }

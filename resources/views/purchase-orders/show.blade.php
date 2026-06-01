@@ -9,18 +9,18 @@
 </div>
 <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
     <div class="card">
-        <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:16px;">Order Items</h3>
+        <h3 style="color:var(--cream);margin-bottom:16px;">Order Items</h3>
         <div class="table-wrap">
             <table>
                 <thead><tr><th>Ingredient</th><th>Unit</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
                 <tbody>
                     @foreach($po->items as $item)
                     <tr>
-                        <td style="font-weight:500;">{{ $item->ingridient->name ?? 'Unknown' }}</td>
+                        <td class="fw-500">{{ $item->ingridient->name ?? 'Unknown' }}</td>
                         <td>{{ $item->ingridient->unit ?? '-' }}</td>
                         <td>{{ number_format($item->quantity,2) }}</td>
                         <td>Rp {{ number_format($item->unit_price) }}</td>
-                        <td style="color:var(--gold);font-weight:600;">Rp {{ number_format($item->subtotal) }}</td>
+                        <td class="text-gold fw-600">Rp {{ number_format($item->subtotal) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -29,13 +29,13 @@
         <div style="text-align:right;margin-top:16px;font-size:1rem;font-weight:700;color:var(--cream);">Total: Rp {{ number_format($po->total_amount) }}</div>
     </div>
     <div class="card">
-        <h3 style="font-family:'Playfair Display',serif;color:var(--cream);margin-bottom:16px;">PO Info</h3>
+        <h3 style="color:var(--cream);margin-bottom:16px;">PO Info</h3>
         <div style="display:flex;flex-direction:column;gap:12px;font-size:.875rem;">
-            <div><span style="color:var(--muted);">Status</span><br><span class="status status-{{ $po->status==='received'?'completed':'pending' }}">{{ ucfirst($po->status) }}</span></div>
-            <div><span style="color:var(--muted);">Supplier</span><br><strong>{{ $po->supplier->name }}</strong></div>
-            <div><span style="color:var(--muted);">Order Date</span><br>{{ \Carbon\Carbon::parse($po->order_date)->format('d M Y') }}</div>
-            @if($po->expected_date)<div><span style="color:var(--muted);">Expected</span><br>{{ \Carbon\Carbon::parse($po->expected_date)->format('d M Y') }}</div>@endif
-            @if($po->notes)<div><span style="color:var(--muted);">Notes</span><br>{{ $po->notes }}</div>@endif
+            <div><span class="text-muted">Status</span><br><span class="status status-{{ $po->status==='received'?'completed':'pending' }}">{{ ucfirst($po->status) }}</span></div>
+            <div><span class="text-muted">Supplier</span><br><strong>{{ $po->supplier->name }}</strong></div>
+            <div><span class="text-muted">Order Date</span><br>{{ \Carbon\Carbon::parse($po->order_date)->format('d M Y') }}</div>
+            @if($po->expected_date)<div><span class="text-muted">Expected</span><br>{{ \Carbon\Carbon::parse($po->expected_date)->format('d M Y') }}</div>@endif
+            @if($po->notes)<div><span class="text-muted">Notes</span><br>{{ $po->notes }}</div>@endif
         </div>
         @if(in_array($po->status,['pending','sent']))
         <div style="margin-top:20px;">

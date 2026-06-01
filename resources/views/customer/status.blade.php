@@ -4,33 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order #{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }} — Status | RestoPOS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root{--bg:#faf8f4;--surface:#fff;--border:#e8e0d0;--gold:#b8860b;--text:#2c2416;--muted:#8a7d6b;--success:#16a34a;--danger:#dc2626}
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-        .header{background:var(--text);color:#fff;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
-        .header .name{font-weight:700;font-size:1.05rem}
-        .table-badge{background:var(--gold);color:#fff;padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:600}
-        .wrap{max-width:480px;margin:0 auto;padding:24px 16px 60px}
-        .order-no{font-size:1.6rem;font-weight:700;letter-spacing:-.5px}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+        .header{background:var(--text);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+        .header .name{font-weight:700;font-size:1rem}
+        .table-badge{background:var(--gold);color:#fff;padding:2px 10px;font-size:.78rem;font-weight:600}
+        .wrap{max-width:480px;margin:0 auto;padding:20px 16px 60px}
+        .order-no{font-size:1.3rem;font-weight:700}
         .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
-        .steps{margin:28px 0;display:flex;flex-direction:column;gap:0}
-        .step{display:flex;gap:14px;align-items:flex-start;padding-bottom:24px;position:relative}
-        .step:not(:last-child)::before{content:"";position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--border)}
+        .steps{margin:24px 0;display:flex;flex-direction:column;gap:0}
+        .step{display:flex;gap:12px;align-items:flex-start;padding-bottom:20px;position:relative}
+        .step:not(:last-child)::before{content:"";position:absolute;left:13px;top:28px;bottom:0;width:1px;background:var(--border)}
         .step.done:not(:last-child)::before{background:var(--success)}
-        .dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;z-index:1}
+        .dot{width:26px;height:26px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;z-index:1;font-weight:600}
         .step.done .dot{background:var(--success);border-color:var(--success);color:#fff}
-        .step.active .dot{background:var(--gold);border-color:var(--gold);color:#fff;animation:pulse 1.4s infinite}
-        @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(184,134,11,.5)}70%{box-shadow:0 0 0 12px rgba(184,134,11,0)}100%{box-shadow:0 0 0 0 rgba(184,134,11,0)}}
-        .step .body .t{font-weight:600;font-size:.98rem}
+        .step.active .dot{background:var(--gold);border-color:var(--gold);color:#fff}
+        .step .body .t{font-weight:600;font-size:.95rem}
         .step .body .d{color:var(--muted);font-size:.82rem;margin-top:2px}
         .step:not(.done):not(.active) .body{opacity:.5}
-        .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:8px}
-        .row{display:flex;justify-content:space-between;font-size:.88rem;padding:5px 0}
-        .row.total{font-weight:700;border-top:2px solid var(--border);margin-top:6px;padding-top:10px;font-size:1rem}
-        .cancelled{background:#fef2f2;border:1px solid #fecaca;color:var(--danger);border-radius:12px;padding:14px;text-align:center;font-weight:600;margin-top:8px}
-        .footnote{color:var(--muted);font-size:.78rem;text-align:center;margin-top:24px}
+        .card{background:var(--surface);border:1px solid var(--border);padding:14px;margin-top:8px}
+        .row{display:flex;justify-content:space-between;font-size:.88rem;padding:4px 0}
+        .row.total{font-weight:700;border-top:1px solid var(--text);margin-top:6px;padding-top:8px;font-size:.95rem}
+        .cancelled{color:var(--danger);border:1px solid var(--danger);padding:12px;text-align:center;font-weight:600;margin-top:8px}
+        .footnote{color:var(--muted);font-size:.78rem;text-align:center;margin-top:20px}
     </style>
 </head>
 <body>

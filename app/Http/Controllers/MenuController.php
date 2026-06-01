@@ -28,7 +28,12 @@ class MenuController extends Controller {
     }
 
     public function destroy($id) {
-        Menu::findOrFail($id)->delete();
+        $menu = Menu::findOrFail($id);
+        if ($menu->orderDetails()->exists()) {
+            return back()->with('error', 'Cannot delete "'.$menu->name.'" — it appears in past orders. Set it to Unavailable instead.');
+        }
+        $menu->components()->delete();
+        $menu->delete();
         return back()->with('success','Menu item deleted!');
     }
 

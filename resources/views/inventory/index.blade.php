@@ -15,23 +15,19 @@
     <div class="stat-card">
         <div class="stat-label">Total Ingredients</div>
         <div class="stat-value">{{ $totalIngredients ?? 0 }}</div>
-        <i class="fas fa-layer-group stat-icon"></i>
     </div>
     <div class="stat-card warning">
         <div class="stat-label">Low Stock</div>
         <div class="stat-value">{{ $lowStock ?? 0 }}</div>
         <div class="stat-sub">Below minimum level</div>
-        <i class="fas fa-exclamation-triangle stat-icon"></i>
     </div>
     <div class="stat-card success">
         <div class="stat-label">Sufficient</div>
         <div class="stat-value">{{ $sufficientStock ?? 0 }}</div>
-        <i class="fas fa-check-circle stat-icon"></i>
     </div>
     <div class="stat-card danger">
         <div class="stat-label">Out of Stock</div>
         <div class="stat-value">{{ $outOfStock ?? 0 }}</div>
-        <i class="fas fa-times-circle stat-icon"></i>
     </div>
 </div>
 
@@ -73,11 +69,11 @@
                     $stockLabel = $qty <= 0 ? 'Out of Stock' : ($qty <= $min ? 'Low Stock' : 'Sufficient');
                 @endphp
                 <tr class="inv-row" data-type="{{ $ingredient->ingridient_types_id }}">
-                    <td style="font-weight:500; color:var(--cream);">{{ $ingredient->name }}</td>
+                    <td class="fw-500 text-cream">{{ $ingredient->name }}</td>
                     <td>{{ $ingredient->type->name ?? '-' }}</td>
                     <td>{{ $ingredient->unit ?? 'pcs' }}</td>
                     <td style="font-weight:600;">{{ number_format($qty, 2) }}</td>
-                    <td style="color:var(--muted);">{{ $min }}</td>
+                    <td class="text-muted">{{ $min }}</td>
                     <td>Rp {{ number_format($ingredient->cost_per_unit) }}</td>
                     <td>{{ $ingredient->supplier->name ?? '-' }}</td>
                     <td><span class="status status-{{ $stockStatus }}">{{ $stockLabel }}</span></td>
@@ -94,7 +90,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="10" style="text-align:center; color:var(--muted); padding:40px;">No ingredients found. Add your first ingredient!</td></tr>
+                <x-empty-state colspan="10" icon="fas fa-box-open" message="No ingredients found. Add your first ingredient!" />
                 @endforelse
             </tbody>
         </table>
@@ -187,7 +183,7 @@
         <div class="modal-body">
             <div class="form-group">
                 <label class="form-label">Current Stock</label>
-                <input type="text" id="currentStockDisplay" class="form-control" readonly style="color:var(--gold);">
+                <input type="text" id="currentStockDisplay" class="form-control" readonly class="text-gold">
             </div>
             <div class="form-group">
                 <label class="form-label">Adjustment Type</label>

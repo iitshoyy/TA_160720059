@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Table;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerOrderController extends Controller
 {
@@ -22,7 +23,7 @@ class CustomerOrderController extends Controller
 
     public function store(Request $req)
     {
-        $req->validate([
+        $data = $req->validate([
             'table_id' => 'required|exists:tables,id',
             'items' => 'required|array|min:1',
             'items.*.menu_id' => 'required|exists:menus,id',
@@ -30,35 +31,39 @@ class CustomerOrderController extends Controller
             'items.*.price' => 'required|numeric|min:0',
             'items.*.subtotal' => 'required|numeric|min:0',
             'name' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:500',
         ]);
 
-        $subtotal = collect($req->items)->sum('subtotal');
+        $subtotal = collect($data['items'])->sum('subtotal');
         $total = round($subtotal * 1.11);
 
-        $order = Order::create([
-            'order_date' => now(),
-            'total_amount' => $total,
-            'users_id' => null,
-            'users_roles_id' => null,
-            'table_id' => $req->table_id,
-            'order_type' => 'dine-in',
-            'customer_name' => $req->filled('name') ? $req->name : 'QR Order',
-            'notes' => $req->notes,
-            'status' => 'pending',
-        ]);
-
-        foreach ($req->items as $item) {
-            OrderDetail::create([
-                'orders_id' => $order->id,
-                'menus_id' => $item['menu_id'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'subtotal' => $item['subtotal'],
+        $order = DB::transaction(function () use ($data, $req, $total) {
+            $order = Order::create([
+                'order_date' => now(),
+                'total_amount' => $total,
+                'users_id' => null,
+                'users_roles_id' => null,
+                'table_id' => $data['table_id'],
+                'order_type' => 'dine-in',
+                'customer_name' => $req->filled('name') ? $data['name'] : 'QR Order',
+                'notes' => $data['notes'] ?? null,
+                'status' => 'pending',
             ]);
-        }
 
-        Table::where('id', $req->table_id)->update(['status' => 'occupied']);
+            foreach ($data['items'] as $item) {
+                OrderDetail::create([
+                    'orders_id' => $order->id,
+                    'menus_id' => $item['menu_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'subtotal' => $item['subtotal'],
+                ]);
+            }
+
+            Table::where('id', $data['table_id'])->update(['status' => 'occupied']);
+
+            return $order;
+        });
 
         return response()->json([
             'success' => true,

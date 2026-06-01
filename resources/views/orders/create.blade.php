@@ -4,50 +4,68 @@
 
 @push('styles')
 <style>
-.pos-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; height: calc(100vh - 160px); }
-.menu-panel { display: flex; flex-direction: column; overflow: hidden; }
-.order-panel { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-.search-bar { padding: 16px; border-bottom: 1px solid var(--border); }
-.category-tabs { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; border-bottom: 1px solid var(--border); }
-.cat-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.pos-grid { display: grid; grid-template-columns: 1fr 400px; gap: 16px; height: calc(100vh - 110px); }
+.menu-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--surface); border: 1px solid var(--border); }
+.order-panel { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
+.search-bar { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.search-bar .form-control { padding: 7px 10px; }
+.category-tabs { display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+.cat-btn { padding: 5px 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family: inherit; }
 .cat-btn.active, .cat-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
-.menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 12px; padding: 16px; overflow-y: auto; flex: 1; }
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 8px; padding: 12px; overflow-y: auto; flex: 1; align-content: start; }
 .menu-item {
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
+    padding: 10px 12px;
     cursor: pointer;
-    transition: all 0.15s;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    min-height: 0;
 }
-.menu-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+.menu-item:hover { border-color: var(--gold); }
 .menu-item.unavailable { opacity: 0.4; cursor: not-allowed; }
-.menu-item .item-name { font-size: 0.82rem; font-weight: 600; color: var(--cream); margin: 8px 0 4px; }
-.menu-item .item-price { font-size: 0.78rem; color: var(--gold); }
-.menu-item .item-emoji { font-size: 2rem; }
-.order-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.order-header h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--cream); }
-.order-type-btns { display: flex; gap: 6px; margin-top: 10px; }
-.type-btn { flex: 1; padding: 7px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.75rem; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.menu-item .item-emoji { font-size: 1.4rem; flex-shrink: 0; }
+.menu-item .item-body { flex: 1; min-width: 0; }
+.menu-item .item-name { font-size: 0.85rem; font-weight: 600; color: var(--cream); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-item .item-price { font-size: 0.78rem; color: var(--gold); font-weight: 600; margin-top: 2px; }
+
+.order-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.order-section-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
+.order-header h3 { font-size: 0.95rem; color: var(--cream); font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.order-type-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+.type-btn { padding: 6px 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.78rem; cursor: pointer; font-family: inherit; }
 .type-btn.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 600; }
-.order-items { flex: 1; overflow-y: auto; padding: 12px; }
-.order-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; margin-bottom: 6px; background: var(--surface2); }
-.order-item .item-info { flex: 1; }
-.order-item .item-info .name { font-size: 0.82rem; font-weight: 500; color: var(--cream); }
-.order-item .item-info .price { font-size: 0.75rem; color: var(--gold); }
-.qty-ctrl { display: flex; align-items: center; gap: 8px; }
-.qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
+
+.order-items { flex: 1; overflow-y: auto; padding: 10px 14px; min-height: 80px; }
+.order-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.order-item:last-child { border-bottom: none; }
+.order-item .item-info { flex: 1; min-width: 0; }
+.order-item .item-info .name { font-size: 0.85rem; font-weight: 500; color: var(--cream); }
+.order-item .item-info .price { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+.qty-ctrl { display: flex; align-items: center; gap: 6px; }
+.qty-btn { width: 22px; height: 22px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; font-family: inherit; }
 .qty-btn:hover { border-color: var(--gold); color: var(--gold); }
 .qty-num { font-weight: 600; font-size: 0.85rem; min-width: 20px; text-align: center; }
-.order-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
-.totals-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
-.totals-row.grand { color: var(--cream); font-weight: 700; font-size: 1rem; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 8px; }
-.table-select-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px,1fr)); gap: 8px; max-height: 200px; overflow-y: auto; }
-.table-opt { padding: 10px 6px; border: 1px solid var(--border); border-radius: 8px; text-align: center; cursor: pointer; font-size: 0.78rem; transition: all 0.15s; }
+
+.order-footer { padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface2); }
+.totals-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+.totals-row.grand { color: var(--cream); font-weight: 700; font-size: 1rem; padding-top: 6px; border-top: 1px solid var(--border); margin-top: 6px; }
+
+.table-select-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; max-height: 160px; overflow-y: auto; }
+.table-opt { padding: 6px 4px; border: 1px solid var(--border); text-align: center; cursor: pointer; font-size: 0.75rem; }
 .table-opt:hover:not(.occupied) { border-color: var(--gold); color: var(--gold); }
 .table-opt.selected { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 600; }
 .table-opt.occupied { opacity: 0.3; cursor: not-allowed; }
+
+@media (max-width: 1100px) {
+    .pos-grid { grid-template-columns: 1fr 360px; }
+}
+@media (max-width: 900px) {
+    .pos-grid { grid-template-columns: 1fr; height: auto; }
+    .order-panel { position: sticky; bottom: 0; }
+}
 </style>
 @endpush
 
@@ -60,9 +78,9 @@
 
 <div class="pos-grid">
     <!-- LEFT: Menu Panel -->
-    <div class="menu-panel card" style="padding:0;">
+    <div class="menu-panel">
         <div class="search-bar">
-            <input type="text" id="menuSearch" class="form-control" placeholder="🔍 Search menu items..." oninput="filterMenu()">
+            <input type="text" id="menuSearch" class="form-control" placeholder="Search menu items..." oninput="filterMenu()">
         </div>
         <div class="category-tabs">
             <button type="button" class="cat-btn active" onclick="filterCategory('all', this)">All</button>
@@ -79,11 +97,10 @@
                  data-category="{{ $menu->categoryMenus_id }}"
                  onclick="{{ $menu->availability ? 'addItem(this)' : '' }}">
                 <div class="item-emoji">🍽️</div>
-                <div class="item-name">{{ $menu->name }}</div>
-                <div class="item-price">Rp {{ number_format($menu->price) }}</div>
-                @if(!$menu->availability)
-                <div style="font-size:0.65rem; color:var(--danger); margin-top:4px;">Unavailable</div>
-                @endif
+                <div class="item-body">
+                    <div class="item-name">{{ $menu->name }}</div>
+                    <div class="item-price">Rp {{ number_format($menu->price) }}@if(!$menu->availability) <span style="color:var(--danger); margin-left:6px;">· Unavailable</span>@endif</div>
+                </div>
             </div>
             @endforeach
         </div>
@@ -91,18 +108,18 @@
 
     <!-- RIGHT: Order Panel -->
     <div class="order-panel">
-        <div class="order-header">
-            <h3><i class="fas fa-receipt" style="color:var(--gold); margin-right:6px;"></i> Current Order</h3>
+        <div class="order-section order-header">
+            <h3><i class="fas fa-receipt" class="text-gold"></i> Current Order</h3>
             <div class="order-type-btns">
-                <button type="button" class="type-btn active" onclick="setOrderType('dine-in', this)">🪑 Dine-In</button>
-                <button type="button" class="type-btn" onclick="setOrderType('takeaway', this)">🥡 Takeaway</button>
-                <button type="button" class="type-btn" onclick="setOrderType('pre-order', this)">📋 Pre-Order</button>
+                <button type="button" class="type-btn active" onclick="setOrderType('dine-in', this)">Dine-In</button>
+                <button type="button" class="type-btn" onclick="setOrderType('takeaway', this)">Takeaway</button>
+                <button type="button" class="type-btn" onclick="setOrderType('pre-order', this)">Pre-Order</button>
             </div>
         </div>
 
         <!-- Table Selection (for dine-in) -->
-        <div id="tableSection" style="padding:12px; border-bottom:1px solid var(--border);">
-            <div style="font-size:0.72rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">Select Table</div>
+        <div id="tableSection" class="order-section">
+            <div class="order-section-label">Select Table</div>
             <div class="table-select-grid">
                 @foreach($tables ?? [] as $table)
                 <div class="table-opt {{ $table->status === 'occupied' ? 'occupied' : '' }}"
@@ -116,15 +133,15 @@
         </div>
 
         <!-- Customer Name -->
-        <div style="padding:10px 12px; border-bottom:1px solid var(--border);">
-            <input type="text" name="customer_name" class="form-control" placeholder="Customer name (optional)">
+        <div class="order-section">
+            <div class="order-section-label">Customer (optional)</div>
+            <input type="text" name="customer_name" class="form-control" placeholder="Customer name">
         </div>
 
         <!-- Order Items -->
         <div class="order-items" id="orderItems">
-            <div id="emptyCart" style="text-align:center; color:var(--muted); padding:40px 20px;">
-                <div style="font-size:3rem; margin-bottom:10px;">🛒</div>
-                <div>Tap menu items to add to order</div>
+            <div id="emptyCart" style="text-align:center; color:var(--muted); padding:28px 16px; font-size:0.85rem;">
+                Tap menu items to add to order
             </div>
         </div>
 
@@ -133,23 +150,20 @@
             <div class="totals-row"><span>Subtotal</span><span id="subtotalDisplay">Rp 0</span></div>
             <div class="totals-row"><span>Tax (11%)</span><span id="taxDisplay">Rp 0</span></div>
             <div class="totals-row grand"><span>TOTAL</span><span id="totalDisplay">Rp 0</span></div>
-            <div class="form-group" style="margin:14px 0 10px;">
-                <label class="form-label">Payment Method</label>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin:12px 0 8px;">
                 <select name="payment_type" class="form-control">
-                    <option value="cash">Cash</option>
-                    <option value="transfer">Bank Transfer</option>
-                    <option value="qris">QRIS</option>
-                    <option value="card">Debit/Credit Card</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Transfer">Transfer</option>
+                    <option value="QRIS">QRIS</option>
+                    <option value="Card">Card</option>
                 </select>
-            </div>
-            <div id="cashInput" style="margin-bottom:10px;">
                 <input type="number" name="amount_paid" id="amountPaid" class="form-control" placeholder="Amount paid" oninput="calcChange()">
-                <div id="changeDisplay" style="font-size:0.8rem; color:var(--gold); margin-top:5px;"></div>
             </div>
-            <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; padding:13px;" onclick="return prepareSubmit()">
+            <div id="changeDisplay" style="font-size:0.8rem; color:var(--gold); margin-bottom:8px; min-height:1em;"></div>
+            <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center;" onclick="return prepareSubmit()">
                 <i class="fas fa-check-circle"></i> Place Order
             </button>
-            <button type="button" class="btn btn-outline" style="width:100%; justify-content:center; margin-top:8px;" onclick="clearCart()">
+            <button type="button" class="btn btn-outline" style="width:100%; justify-content:center; margin-top:6px;" onclick="clearCart()">
                 <i class="fas fa-trash"></i> Clear
             </button>
         </div>

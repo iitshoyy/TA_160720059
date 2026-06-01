@@ -11,32 +11,27 @@
     <x-stat-card
         label="Today's Revenue"
         value="Rp {{ number_format($todayRevenue ?? 0) }}"
-        sub="{{ $todayOrders ?? 0 }} transactions"
-        icon="fas fa-coins" />
+        sub="{{ $todayOrders ?? 0 }} transactions" />
     <x-stat-card
         tone="success"
         label="7-Day Revenue"
         value="Rp {{ number_format($weekRevenue ?? 0) }}"
-        sub="Rolling weekly total"
-        icon="fas fa-chart-line" />
+        sub="Rolling weekly total" />
     <x-stat-card
         tone="info"
         label="Reservations Today"
         value="{{ $todayReservations ?? 0 }}"
-        sub="Bookings on the floor"
-        icon="fas fa-calendar" />
+        sub="Bookings on the floor" />
     <x-stat-card
         tone="warning"
         label="Pending Orders"
         value="{{ $pendingOrders ?? 0 }}"
-        sub="Awaiting kitchen"
-        icon="fas fa-hourglass-half" />
+        sub="Awaiting kitchen" />
     <x-stat-card
         tone="danger"
         label="Low Stock Items"
         value="{{ $lowStock ?? 0 }}"
-        sub="Below reorder point"
-        icon="fas fa-exclamation-triangle" />
+        sub="Below reorder point" />
 </div>
 
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">

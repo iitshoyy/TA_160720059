@@ -8,25 +8,21 @@
         <div class="stat-label">Today's Revenue</div>
         <div class="stat-value">Rp {{ number_format($todayRevenue ?? 0) }}</div>
         <div class="stat-sub">{{ $todayOrders ?? 0 }} transactions today</div>
-        <i class="fas fa-coins stat-icon"></i>
     </div>
     <div class="stat-card success">
         <div class="stat-label">Orders Today</div>
         <div class="stat-value">{{ $todayOrders ?? 0 }}</div>
         <div class="stat-sub">{{ $pendingOrders ?? 0 }} pending</div>
-        <i class="fas fa-receipt stat-icon"></i>
     </div>
     <div class="stat-card info">
         <div class="stat-label">Reservations</div>
         <div class="stat-value">{{ $todayReservations ?? 0 }}</div>
         <div class="stat-sub">Today's bookings</div>
-        <i class="fas fa-calendar stat-icon"></i>
     </div>
     <div class="stat-card warning">
         <div class="stat-label">Low Stock Items</div>
         <div class="stat-value">{{ $lowStock ?? 0 }}</div>
         <div class="stat-sub">Need restocking</div>
-        <i class="fas fa-exclamation-triangle stat-icon"></i>
     </div>
 </div>
 
@@ -34,7 +30,7 @@
     <!-- Recent Orders -->
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
-            <h3 style="font-family:'Playfair Display',serif; color:var(--cream); font-size:1rem;">Recent Orders</h3>
+            <h3 style="color:var(--cream); font-size:1rem;">Recent Orders</h3>
             <a href="{{ route('orders.index') }}" class="btn btn-outline btn-sm">View All</a>
         </div>
         <div class="table-wrap">
@@ -56,7 +52,7 @@
                         <td><span class="status status-{{ $order->status }}">{{ ucfirst($order->status) }}</span></td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No orders yet</td></tr>
+                    <x-empty-state colspan="4" icon="fas fa-receipt" message="No orders yet" />
                     @endforelse
                 </tbody>
             </table>
@@ -66,7 +62,7 @@
     <!-- Today's Reservations -->
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
-            <h3 style="font-family:'Playfair Display',serif; color:var(--cream); font-size:1rem;">Today's Reservations</h3>
+            <h3 style="color:var(--cream); font-size:1rem;">Today's Reservations</h3>
             <a href="{{ route('reservations.index') }}" class="btn btn-outline btn-sm">View All</a>
         </div>
         <div class="table-wrap">
@@ -88,7 +84,7 @@
                         <td><span class="status status-{{ $res->status }}">{{ ucfirst($res->status) }}</span></td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">No reservations today</td></tr>
+                    <x-empty-state colspan="4" icon="fas fa-calendar" message="No reservations today" />
                     @endforelse
                 </tbody>
             </table>
@@ -99,7 +95,7 @@
 <!-- Table Status Overview -->
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
-        <h3 style="font-family:'Playfair Display',serif; color:var(--cream); font-size:1rem;">Table Status Overview</h3>
+        <h3 style="color:var(--cream); font-size:1rem;">Table Status Overview</h3>
         <a href="{{ route('tables.index') }}" class="btn btn-outline btn-sm">Manage Tables</a>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); gap:12px;">

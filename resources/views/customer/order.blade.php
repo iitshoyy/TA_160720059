@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order — {{ $table->name ?? 'Table' }} | RestoPOS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         :root {
@@ -12,19 +11,16 @@
             --surface: #ffffff;
             --border: #e8e0d0;
             --gold: #b8860b;
-            --gold-light: #d4a017;
             --text: #2c2416;
             --muted: #8a7d6b;
-            --danger: #dc2626;
-            --success: #16a34a;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
 
         .header {
             background: var(--text);
             color: #fff;
-            padding: 18px 20px;
+            padding: 14px 16px;
             position: sticky;
             top: 0;
             z-index: 50;
@@ -32,48 +28,43 @@
             align-items: center;
             justify-content: space-between;
         }
-        .header .restaurant-name { font-weight: 700; font-size: 1.1rem; }
+        .header .restaurant-name { font-weight: 700; font-size: 1rem; }
         .header .table-badge {
             background: var(--gold);
             color: #fff;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 2px 10px;
+            font-size: 0.78rem;
             font-weight: 600;
         }
         .cart-float {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
             background: var(--text);
             color: #fff;
-            padding: 14px 28px;
-            border-radius: 50px;
-            display: flex;
+            padding: 12px 16px;
+            display: none;
             align-items: center;
+            justify-content: space-between;
             gap: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
             cursor: pointer;
             z-index: 40;
             font-weight: 600;
-            min-width: 260px;
-            justify-content: space-between;
-            display: none;
+            border: 1px solid var(--text);
         }
         .cart-float.visible { display: flex; }
         .cart-badge {
             background: var(--gold);
             color: #fff;
-            border-radius: 50%;
-            width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.85rem; font-weight: 700;
+            width: 22px; height: 22px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700;
         }
         .categories {
             display: flex;
-            gap: 8px;
-            padding: 14px 16px;
+            gap: 6px;
+            padding: 10px 16px;
             overflow-x: auto;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -81,99 +72,81 @@
         }
         .categories::-webkit-scrollbar { display: none; }
         .cat-pill {
-            padding: 6px 16px;
-            border-radius: 20px;
-            border: 1.5px solid var(--border);
+            padding: 5px 12px;
+            border: 1px solid var(--border);
             background: transparent;
             font-size: 0.82rem;
             cursor: pointer;
             white-space: nowrap;
             font-family: inherit;
             color: var(--muted);
-            transition: all 0.15s;
         }
         .cat-pill.active { background: var(--text); color: #fff; border-color: var(--text); }
-        .section-title {
-            padding: 20px 16px 10px;
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--text);
-            letter-spacing: -0.3px;
-        }
-        .menu-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+        .section-title { padding: 16px 16px 8px; font-weight: 600; font-size: 0.95rem; color: var(--text); }
+        .menu-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
         .menu-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px;
+            padding: 12px;
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
         }
-        .menu-emoji { font-size: 2.5rem; flex-shrink: 0; width: 56px; text-align: center; }
+        .menu-emoji { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
         .menu-info { flex: 1; }
-        .menu-info .name { font-weight: 600; font-size: 0.95rem; }
+        .menu-info .name { font-weight: 600; font-size: 0.92rem; }
         .menu-info .desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-        .menu-info .price { font-weight: 700; color: var(--gold); font-size: 0.9rem; margin-top: 5px; }
-        .qty-control { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .menu-info .price { font-weight: 600; color: var(--gold); font-size: 0.88rem; margin-top: 4px; }
+        .qty-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .qty-btn {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            border: 1.5px solid var(--border);
+            width: 28px; height: 28px;
+            border: 1px solid var(--border);
             background: var(--bg);
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.15s;
+            font-family: inherit;
+            color: var(--text);
         }
         .qty-btn.add { background: var(--text); color: #fff; border-color: var(--text); }
-        .qty-btn:active { transform: scale(0.92); }
-        .qty-num { font-weight: 700; min-width: 20px; text-align: center; }
+        .qty-num { font-weight: 600; min-width: 18px; text-align: center; font-size: 0.9rem; }
 
         /* Cart Drawer */
-        .cart-drawer {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            display: none;
-        }
+        .cart-drawer { position: fixed; inset: 0; z-index: 100; display: none; }
         .cart-drawer.open { display: block; }
         .cart-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
         .cart-panel {
             position: absolute;
             bottom: 0; left: 0; right: 0;
             background: var(--surface);
-            border-radius: 24px 24px 0 0;
-            padding: 24px 20px;
+            border-top: 1px solid var(--border);
+            padding: 20px 16px;
             max-height: 80vh;
             overflow-y: auto;
         }
-        .cart-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .cart-handle { display: none; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
         .cart-item:last-of-type { border-bottom: none; }
-        .cart-total { font-size: 1.1rem; font-weight: 700; padding: 14px 0 0; display: flex; justify-content: space-between; border-top: 2px solid var(--border); margin-top: 4px; }
+        .cart-total { font-size: 1rem; font-weight: 700; padding: 12px 0 0; display: flex; justify-content: space-between; border-top: 1px solid var(--text); margin-top: 4px; }
         .order-btn {
             width: 100%;
-            margin-top: 16px;
-            padding: 16px;
+            margin-top: 12px;
+            padding: 12px;
             background: var(--text);
             color: #fff;
-            border: none;
-            border-radius: 14px;
-            font-size: 1rem;
-            font-weight: 700;
+            border: 1px solid var(--text);
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
             font-family: inherit;
         }
-        .order-btn:active { opacity: 0.85; }
         .notes-input {
             width: 100%;
-            padding: 10px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
             font-family: inherit;
             font-size: 0.85rem;
-            margin-top: 12px;
+            margin-top: 10px;
             color: var(--text);
             background: var(--bg);
         }

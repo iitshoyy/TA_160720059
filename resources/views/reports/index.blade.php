@@ -45,31 +45,27 @@
         <div class="stat-label">Total Revenue</div>
         <div class="stat-value" style="font-size:1.6rem;">Rp {{ number_format($summary['revenue'] ?? 0) }}</div>
         <div class="stat-sub">Gross income</div>
-        <i class="fas fa-money-bill stat-icon"></i>
     </div>
     <div class="stat-card success">
         <div class="stat-label">Total Orders</div>
         <div class="stat-value">{{ $summary['orders'] ?? 0 }}</div>
         <div class="stat-sub">Completed transactions</div>
-        <i class="fas fa-receipt stat-icon"></i>
     </div>
     <div class="stat-card info">
         <div class="stat-label">Avg Order Value</div>
         <div class="stat-value" style="font-size:1.6rem;">Rp {{ number_format($summary['avg_order'] ?? 0) }}</div>
-        <i class="fas fa-chart-line stat-icon"></i>
     </div>
     <div class="stat-card warning">
         <div class="stat-label">Tax Collected</div>
         <div class="stat-value" style="font-size:1.6rem;">Rp {{ number_format($summary['tax'] ?? 0) }}</div>
         <div class="stat-sub">11% PPN</div>
-        <i class="fas fa-percent stat-icon"></i>
     </div>
 </div>
 
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
     <!-- Best Selling Items -->
     <div class="card">
-        <h3 style="font-family:'Playfair Display',serif; color:var(--cream); margin-bottom:16px;">Best Selling Items</h3>
+        <h3 style="color:var(--cream); margin-bottom:16px;">Best Selling Items</h3>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -78,12 +74,12 @@
                 <tbody>
                     @forelse($topItems ?? [] as $item)
                     <tr>
-                        <td style="font-weight:500;">{{ $item->menu_name }}</td>
+                        <td class="fw-500">{{ $item->menu_name }}</td>
                         <td>{{ $item->total_qty }}</td>
-                        <td style="color:var(--gold);">Rp {{ number_format($item->total_revenue) }}</td>
+                        <td class="text-gold">Rp {{ number_format($item->total_revenue) }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="3" style="color:var(--muted); text-align:center; padding:20px;">No data</td></tr>
+                    <x-empty-state colspan="3" icon="fas fa-chart-line" message="No data" />
                     @endforelse
                 </tbody>
             </table>
@@ -92,7 +88,7 @@
 
     <!-- Payment Method Breakdown -->
     <div class="card">
-        <h3 style="font-family:'Playfair Display',serif; color:var(--cream); margin-bottom:16px;">Payment Methods</h3>
+        <h3 style="color:var(--cream); margin-bottom:16px;">Payment Methods</h3>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -103,10 +99,10 @@
                     <tr>
                         <td><i class="fas fa-{{ $pm->payment_type === 'cash' ? 'money-bill' : ($pm->payment_type === 'card' ? 'credit-card' : 'qrcode') }}" style="color:var(--gold); margin-right:6px;"></i>{{ ucfirst($pm->payment_type) }}</td>
                         <td>{{ $pm->count }}</td>
-                        <td style="color:var(--gold);">Rp {{ number_format($pm->total) }}</td>
+                        <td class="text-gold">Rp {{ number_format($pm->total) }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="3" style="color:var(--muted); text-align:center; padding:20px;">No data</td></tr>
+                    <x-empty-state colspan="3" icon="fas fa-chart-line" message="No data" />
                     @endforelse
                 </tbody>
             </table>
@@ -116,7 +112,7 @@
 
 <!-- Sales Trend Chart (simple bar visualization) -->
 <div class="card" style="margin-bottom:20px;">
-    <h3 style="font-family:'Playfair Display',serif; color:var(--cream); margin-bottom:20px;">Sales Trend</h3>
+    <h3 style="color:var(--cream); margin-bottom:20px;">Sales Trend</h3>
     <div style="display:flex; align-items:flex-end; gap:6px; height:180px; padding-bottom:8px; border-bottom:1px solid var(--border);">
         @forelse($dailySales ?? [] as $day)
         @php $maxVal = collect($dailySales)->max('revenue') ?: 1; @endphp
@@ -125,9 +121,7 @@
             <div style="
                 width:100%;
                 height:{{ max(4, ($day->revenue / $maxVal) * 140) }}px;
-                background:linear-gradient(to top, var(--gold), var(--gold-light));
-                border-radius:4px 4px 0 0;
-                transition: all 0.3s;
+                background:var(--gold);
             " title="Rp {{ number_format($day->revenue) }}"></div>
             <div style="font-size:0.65rem; color:var(--muted);">{{ \Carbon\Carbon::parse($day->date)->format('d/m') }}</div>
         </div>
@@ -140,7 +134,7 @@
 <!-- Detailed Transaction Table -->
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h3 style="font-family:'Playfair Display',serif; color:var(--cream);">Transaction Details</h3>
+        <h3 class="text-cream">Transaction Details</h3>
     </div>
     <div class="table-wrap">
         <table>
@@ -164,18 +158,18 @@
                     $sub = $order->total_amount - $tax;
                 @endphp
                 <tr>
-                    <td style="color:var(--gold);">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td class="text-gold">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</td>
                     <td style="font-size:0.78rem;">{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/y H:i') }}</td>
                     <td>{{ $order->customer_name ?? 'Walk-in' }}</td>
                     <td><span class="status status-completed" style="font-size:0.65rem;">{{ ucfirst(str_replace('-',' ',$order->order_type)) }}</span></td>
                     <td>{{ $order->orderDetails->count() }}</td>
                     <td>Rp {{ number_format($sub) }}</td>
                     <td>Rp {{ number_format($tax) }}</td>
-                    <td style="font-weight:600; color:var(--cream);">Rp {{ number_format($order->total_amount) }}</td>
+                    <td class="fw-600 text-cream">Rp {{ number_format($order->total_amount) }}</td>
                     <td>{{ ucfirst($order->payment_type ?? 'Cash') }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="9" style="text-align:center; color:var(--muted); padding:30px;">No transactions in this period</td></tr>
+                <x-empty-state colspan="9" icon="fas fa-receipt" message="No transactions in this period" />
                 @endforelse
             </tbody>
         </table>

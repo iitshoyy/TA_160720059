@@ -12,10 +12,10 @@
 </div>
 
 <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
-    <div class="stat-card info"><div class="stat-label">Today</div><div class="stat-value">{{ $todayCount ?? 0 }}</div><i class="fas fa-calendar-day stat-icon"></i></div>
-    <div class="stat-card warning"><div class="stat-label">Pending</div><div class="stat-value">{{ $pendingCount ?? 0 }}</div><i class="fas fa-clock stat-icon"></i></div>
-    <div class="stat-card success"><div class="stat-label">Confirmed</div><div class="stat-value">{{ $confirmedCount ?? 0 }}</div><i class="fas fa-check stat-icon"></i></div>
-    <div class="stat-card danger"><div class="stat-label">Cancelled</div><div class="stat-value">{{ $cancelledCount ?? 0 }}</div><i class="fas fa-times stat-icon"></i></div>
+    <div class="stat-card info"><div class="stat-label">Today</div><div class="stat-value">{{ $todayCount ?? 0 }}</div></div>
+    <div class="stat-card warning"><div class="stat-label">Pending</div><div class="stat-value">{{ $pendingCount ?? 0 }}</div></div>
+    <div class="stat-card success"><div class="stat-label">Confirmed</div><div class="stat-value">{{ $confirmedCount ?? 0 }}</div></div>
+    <div class="stat-card danger"><div class="stat-label">Cancelled</div><div class="stat-value">{{ $cancelledCount ?? 0 }}</div></div>
 </div>
 
 <div class="tabs">
@@ -45,11 +45,11 @@
             <tbody>
                 @forelse($reservations ?? [] as $res)
                 <tr>
-                    <td style="color:var(--gold);">#{{ $res->id }}</td>
-                    <td style="font-weight:500; color:var(--cream);">{{ $res->customer_name }}</td>
+                    <td class="text-gold">#{{ $res->id }}</td>
+                    <td class="fw-500 text-cream">{{ $res->customer_name }}</td>
                     <td style="font-size:0.8rem;">{{ $res->phone }}</td>
                     <td>
-                        <div style="font-weight:500;">{{ \Carbon\Carbon::parse($res->reservation_date)->format('d M Y') }}</div>
+                        <div class="fw-500">{{ \Carbon\Carbon::parse($res->reservation_date)->format('d M Y') }}</div>
                         <div style="font-size:0.78rem; color:var(--muted);">{{ \Carbon\Carbon::parse($res->reservation_time)->format('H:i') }}</div>
                     </td>
                     <td style="text-align:center;">{{ $res->guests }} pax</td>
@@ -84,7 +84,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="10" style="text-align:center; color:var(--muted); padding:40px;">No reservations found</td></tr>
+                <x-empty-state colspan="10" icon="fas fa-calendar-xmark" message="No reservations found" />
                 @endforelse
             </tbody>
         </table>
@@ -102,15 +102,15 @@
         <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px; border-left: 3px solid {{ $res->status === 'confirmed' ? 'var(--success)' : ($res->status === 'pending' ? 'var(--warning)' : 'var(--danger)') }};">
             <div style="display:flex; justify-content:space-between; align-items:start;">
                 <div>
-                    <div style="font-weight:600; color:var(--cream);">{{ $res->customer_name }}</div>
+                    <div class="fw-600 text-cream">{{ $res->customer_name }}</div>
                     <div style="font-size:0.78rem; color:var(--muted);">{{ $res->phone }}</div>
                 </div>
                 <span class="status status-{{ $res->status }}">{{ ucfirst($res->status) }}</span>
             </div>
             <div style="margin-top:12px; display:flex; gap:16px; font-size:0.82rem;">
-                <span><i class="fas fa-clock" style="color:var(--gold);"></i> {{ \Carbon\Carbon::parse($res->reservation_time)->format('H:i') }}</span>
-                <span><i class="fas fa-users" style="color:var(--gold);"></i> {{ $res->guests }} pax</span>
-                <span><i class="fas fa-chair" style="color:var(--gold);"></i> {{ $res->table->name ?? 'TBA' }}</span>
+                <span><i class="fas fa-clock" class="text-gold"></i> {{ \Carbon\Carbon::parse($res->reservation_time)->format('H:i') }}</span>
+                <span><i class="fas fa-users" class="text-gold"></i> {{ $res->guests }} pax</span>
+                <span><i class="fas fa-chair" class="text-gold"></i> {{ $res->table->name ?? 'TBA' }}</span>
             </div>
             @if($res->notes)
             <div style="margin-top:8px; font-size:0.78rem; color:var(--muted); font-style:italic;">{{ $res->notes }}</div>
@@ -125,8 +125,93 @@
 
 <div class="tab-content" id="tabUpcoming">
 <div class="card">
-    <p style="color:var(--muted); text-align:center; padding:30px;">Upcoming reservations (next 7 days)</p>
+    <p style="color:var(--muted); font-size:0.8rem; margin-bottom:12px;">Next 7 days — pending and confirmed only.</p>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Date</th><th>Time</th><th>Guest</th><th>Phone</th><th>Pax</th><th>Table</th><th>Status</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+            @forelse($upcomingReservations ?? [] as $res)
+                <tr>
+                    <td>{{ \Carbon\Carbon::parse($res->reservation_date)->format('d M Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($res->reservation_time)->format('H:i') }}</td>
+                    <td class="fw-500 text-cream">{{ $res->customer_name }}</td>
+                    <td style="font-size:0.8rem;">{{ $res->phone }}</td>
+                    <td style="text-align:center;">{{ $res->guests }}</td>
+                    <td>{{ $res->table->name ?? 'Not assigned' }}</td>
+                    <td><span class="status status-{{ $res->status }}">{{ ucfirst($res->status) }}</span></td>
+                    <td style="font-size:0.78rem; color:var(--muted); max-width:200px;">{{ \Illuminate\Support\Str::limit($res->notes, 50) }}</td>
+                </tr>
+            @empty
+                <x-empty-state colspan="8" icon="fas fa-calendar" message="No upcoming reservations in the next 7 days" />
+            @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
+</div>
+
+<!-- Edit Reservation Modal -->
+<div class="modal-overlay" id="editReservationModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">Edit Reservation <span id="erId" style="color:var(--gold);"></span></div>
+            <button class="modal-close" onclick="closeModal('editReservationModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="POST" id="editReservationForm">
+        @csrf @method('PUT')
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Guest Name</label>
+                    <input type="text" name="customer_name" id="erName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" id="erPhone" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="reservation_date" id="erDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time</label>
+                    <input type="time" name="reservation_time" id="erTime" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Guests</label>
+                    <input type="number" name="guests" id="erGuests" class="form-control" required min="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Table</label>
+                    <select name="table_id" id="erTable" class="form-control">
+                        <option value="">Auto-assign</option>
+                        @foreach($tables ?? [] as $table)
+                        <option value="{{ $table->id }}">{{ $table->name }} ({{ $table->capacity }} pax)</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" id="erEmail" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea name="notes" id="erNotes" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeModal('editReservationModal')">Cancel</button>
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Changes</button>
+        </div>
+        </form>
+    </div>
 </div>
 
 <!-- Add Reservation Modal -->
@@ -199,8 +284,17 @@
 @push('scripts')
 <script>
 function openEditReservation(res) {
-    // Populate and open an edit modal — implement as needed
-    alert('Edit reservation #' + res.id);
+    document.getElementById('editReservationForm').action = '/reservations/' + res.id;
+    document.getElementById('erId').textContent  = '#' + res.id;
+    document.getElementById('erName').value      = res.customer_name ?? '';
+    document.getElementById('erPhone').value     = res.phone ?? '';
+    document.getElementById('erDate').value      = (res.reservation_date ?? '').substring(0, 10);
+    document.getElementById('erTime').value      = (res.reservation_time ?? '').substring(0, 5);
+    document.getElementById('erGuests').value    = res.guests ?? 1;
+    document.getElementById('erTable').value     = res.table_id ?? '';
+    document.getElementById('erEmail').value     = res.email ?? '';
+    document.getElementById('erNotes').value     = res.notes ?? '';
+    openModal('editReservationModal');
 }
 </script>
 @endpush

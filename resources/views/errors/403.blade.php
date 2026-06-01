@@ -18,8 +18,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>403 — Akses Ditolak — RestoPOS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -30,122 +28,100 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: radial-gradient(ellipse at top, #1a1814 0%, #0f0e0c 70%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 24px;
+            font-size: 14px;
         }
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 48px 40px;
-            max-width: 540px;
+            padding: 32px;
+            max-width: 480px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
             position: relative;
-            overflow: hidden;
-        }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, var(--danger), transparent);
         }
         .icon-wrap {
-            width: 88px; height: 88px;
-            border-radius: 50%;
-            background: rgba(192,57,43,0.12);
-            border: 2px solid rgba(192,57,43,0.4);
+            width: 56px; height: 56px;
+            border: 1px solid var(--danger);
             display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 24px;
-            font-size: 2.4rem;
+            margin: 0 auto 20px;
+            font-size: 1.6rem;
             color: var(--danger);
         }
         .code {
-            font-family: 'Playfair Display', serif;
-            font-size: 4.2rem;
+            font-size: 2.8rem;
             font-weight: 700;
             color: var(--gold);
             line-height: 1;
-            letter-spacing: 4px;
         }
         .code-sub {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--muted);
-            letter-spacing: 4px;
-            text-transform: uppercase;
             margin-top: 4px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.4rem;
+            font-size: 1.15rem;
             color: var(--cream);
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             font-weight: 600;
         }
         .message {
             color: var(--text);
-            font-size: 1.02rem;
-            line-height: 1.6;
-            background: var(--surface2);
+            font-size: 0.95rem;
+            line-height: 1.5;
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 24px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
         }
         .current-role {
             font-size: 0.82rem;
             color: var(--muted);
-            margin-bottom: 28px;
+            margin-bottom: 20px;
         }
         .current-role strong { color: var(--gold); font-weight: 600; }
         .actions {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             justify-content: center;
             flex-wrap: wrap;
         }
         .btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 11px 22px;
-            border-radius: 10px;
-            font-size: 0.88rem;
+            gap: 6px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
-            border: none;
+            border: 1px solid transparent;
             text-decoration: none;
-            transition: all 0.15s;
-            font-family: 'DM Sans', sans-serif;
+            font-family: inherit;
         }
-        .btn-gold { background: var(--gold); color: #000; }
-        .btn-gold:hover { background: var(--gold-light); }
-        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-gold { background: var(--gold); color: #000; border-color: var(--gold); }
+        .btn-gold:hover { background: var(--gold-light); border-color: var(--gold-light); }
+        .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
         .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-        .btn-danger-outline { background: transparent; color: #e07060; border: 1px solid rgba(192,57,43,0.4); }
-        .btn-danger-outline:hover { background: rgba(192,57,43,0.12); }
+        .btn-danger-outline { background: transparent; color: #e07060; border-color: #e07060; }
         .brand {
             position: absolute;
-            top: 24px; left: 24px;
-            font-family: 'Playfair Display', serif;
-            font-size: 0.9rem;
+            top: 20px; left: 20px;
+            font-size: 0.85rem;
             color: var(--gold);
-            letter-spacing: 2px;
+            font-weight: 600;
         }
         @media (max-width: 480px) {
-            .card { padding: 36px 24px; }
-            .code { font-size: 3.2rem; }
-            h1 { font-size: 1.15rem; }
-            .message { font-size: 0.92rem; }
+            .card { padding: 24px; }
+            .code { font-size: 2.2rem; }
+            h1 { font-size: 1.05rem; }
+            .message { font-size: 0.88rem; }
         }
     </style>
 </head>

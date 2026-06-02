@@ -33,14 +33,18 @@
                     <td>{{ $menu->category->name ?? '-' }}</td>
                     <td class="text-gold fw-600">Rp {{ number_format($menu->price) }}</td>
                     <td>
-                        <form method="POST" action="{{ route('menus.toggle',$menu->id) }}">@csrf @method('PATCH')
-                            <button type="submit" class="status {{ $menu->availability?'status-available':'status-cancelled' }}" style="background:none;border:none;cursor:pointer;padding:3px 10px;">
-                                {{ $menu->availability?'Available':'Unavailable' }}
-                            </button>
-                        </form>
+                        @php($cap = $menu->stockCapacity())
+                        @if($menu->components->isEmpty())
+                            <span class="status status-cancelled">No recipe</span>
+                        @elseif($cap > 0)
+                            <span class="status status-available">Available ({{ $cap }})</span>
+                        @else
+                            <span class="status status-cancelled">Sold Out</span>
+                        @endif
                     </td>
                     <td>
                         <div style="display:flex;gap:6px;">
+                            <button class="btn btn-outline btn-sm" title="Recipe" onclick="openRecipe({{ $menu->id }}, '{{ addslashes($menu->name) }}')"><i class="fas fa-flask"></i></button>
                             <button class="btn btn-outline btn-sm" onclick='openEdit({{ json_encode($menu) }})'><i class="fas fa-edit"></i></button>
                             <form method="POST" action="{{ route('menus.destroy',$menu->id) }}">@csrf @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this menu item?')"><i class="fas fa-trash"></i></button>
@@ -107,6 +111,23 @@
         </form>
     </div>
 </div>
+<!-- Recipe Modal -->
+<div class="modal-overlay" id="recipeModal">
+    <div class="modal">
+        <div class="modal-header"><div class="modal-title" id="recipeTitle">Recipe</div><button class="modal-close" onclick="closeModal('recipeModal')"><i class="fas fa-times"></i></button></div>
+        <form method="POST" id="recipeForm">@csrf @method('PUT')
+        <div class="modal-body">
+            <p style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;">A menu is orderable only when it has a recipe and every ingredient is in stock.</p>
+            <div id="recipeRows"></div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addRecipeRow()"><i class="fas fa-plus"></i> Add ingredient</button>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeModal('recipeModal')">Cancel</button>
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Recipe</button>
+        </div>
+        </form>
+    </div>
+</div>
 @endsection
 @push('scripts')
 <script>
@@ -117,6 +138,38 @@ function openEdit(m) {
     document.getElementById('editDesc').value     = m.description || '';
     document.getElementById('editCategory').value = m.categoryMenus_id;
     openModal('editMenuModal');
+}
+
+const INGREDIENTS = @json($ingredients);
+
+function ingredientOptions(selected) {
+    return INGREDIENTS.map(i =>
+        `<option value="${i.id}" ${i.id == selected ? 'selected' : ''}>${i.name} (${i.unit})</option>`
+    ).join('');
+}
+
+function addRecipeRow(ingId = '', qty = '') {
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+    row.innerHTML = `
+        <select name="ingredients[]" class="form-control" required style="flex:2;">
+            <option value="">Select ingredient</option>${ingredientOptions(ingId)}
+        </select>
+        <input type="number" name="quantities[]" class="form-control" step="0.0001" min="0.0001" required placeholder="Qty per portion" value="${qty}" style="flex:1;">
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+    document.getElementById('recipeRows').appendChild(row);
+}
+
+async function openRecipe(id, name) {
+    document.getElementById('recipeTitle').textContent = 'Recipe — ' + name;
+    document.getElementById('recipeForm').action = '/menus/' + id + '/recipe';
+    document.getElementById('recipeRows').innerHTML = '';
+    const resp = await fetch('/menus/' + id + '/recipe', { headers: { 'Accept': 'application/json' } });
+    const components = await resp.json();
+    if (components.length === 0) { addRecipeRow(); }
+    else { components.forEach(c => addRecipeRow(c.ingridients_id, c.quantity)); }
+    openModal('recipeModal');
 }
 </script>
 @endpush

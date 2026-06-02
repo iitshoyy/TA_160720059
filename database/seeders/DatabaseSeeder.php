@@ -131,7 +131,7 @@ class DatabaseSeeder extends Seeder
         DB::table('inventories')->insert([
             ['ingridient_id'=>1,  'quantity_on_hand'=>12.5,'last_updated'=>now(),'created_at'=>now(),'updated_at'=>now()],
             ['ingridient_id'=>2,  'quantity_on_hand'=>8.0, 'last_updated'=>now(),'created_at'=>now(),'updated_at'=>now()],
-            ['ingridient_id'=>3,  'quantity_on_hand'=>2.0, 'last_updated'=>now(),'created_at'=>now(),'updated_at'=>now()], // low
+            ['ingridient_id'=>3,  'quantity_on_hand'=>0.0, 'last_updated'=>now(),'created_at'=>now(),'updated_at'=>now()], // sold-out demo
             ['ingridient_id'=>4,  'quantity_on_hand'=>45.0,'last_updated'=>now(),'created_at'=>now(),'updated_at'=>now()],
             ['ingridient_id'=>5,  'quantity_on_hand'=>8.0, 'last_updated'=>now(),'created_at'=>now(),'updated_at'=>now()],
             ['ingridient_id'=>6,  'quantity_on_hand'=>1.5, 'last_updated'=>now(),'created_at'=>now(),'updated_at'=>now()], // low
@@ -151,16 +151,69 @@ class DatabaseSeeder extends Seeder
 
         // Components (recipe — which ingredients each menu item uses)
         DB::table('components')->insert([
-            // Nasi Goreng Special (menu_id=1)
-            ['menus_id'=>1,'ingridients_id'=>4, 'quantity'=>'0.3','created_at'=>now(),'updated_at'=>now()], // beras
-            ['menus_id'=>1,'ingridients_id'=>1, 'quantity'=>'0.1','created_at'=>now(),'updated_at'=>now()], // ayam
-            ['menus_id'=>1,'ingridients_id'=>2, 'quantity'=>'0.05','created_at'=>now(),'updated_at'=>now()], // telur
-            ['menus_id'=>1,'ingridients_id'=>6, 'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()], // bawang merah
-            ['menus_id'=>1,'ingridients_id'=>12,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()], // minyak
-            // Ayam Bakar Madu (menu_id=3)
+            // Nasi Goreng Special (1)
+            ['menus_id'=>1,'ingridients_id'=>4, 'quantity'=>'0.3', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>1,'ingridients_id'=>1, 'quantity'=>'0.1', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>1,'ingridients_id'=>2, 'quantity'=>'0.05','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>1,'ingridients_id'=>6, 'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>1,'ingridients_id'=>12,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Mie Goreng Spesial (2)
+            ['menus_id'=>2,'ingridients_id'=>5, 'quantity'=>'0.2', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>2,'ingridients_id'=>1, 'quantity'=>'0.08','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>2,'ingridients_id'=>2, 'quantity'=>'0.05','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>2,'ingridients_id'=>12,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Ayam Bakar Madu (3)
             ['menus_id'=>3,'ingridients_id'=>1, 'quantity'=>'0.25','created_at'=>now(),'updated_at'=>now()],
             ['menus_id'=>3,'ingridients_id'=>7, 'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
             ['menus_id'=>3,'ingridients_id'=>13,'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
+            // Ikan Bakar Bumbu Bali (4) — Ikan Kakap stock is 0 => Sold Out demo
+            ['menus_id'=>4,'ingridients_id'=>3, 'quantity'=>'0.3', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>4,'ingridients_id'=>7, 'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>4,'ingridients_id'=>12,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Soto Ayam (5)
+            ['menus_id'=>5,'ingridients_id'=>1, 'quantity'=>'0.15','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>5,'ingridients_id'=>2, 'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>5,'ingridients_id'=>7, 'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Gado-Gado (6)
+            ['menus_id'=>6,'ingridients_id'=>10,'quantity'=>'0.1', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>6,'ingridients_id'=>11,'quantity'=>'0.1', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>6,'ingridients_id'=>9, 'quantity'=>'0.05','created_at'=>now(),'updated_at'=>now()],
+            // Lumpia Goreng (7)
+            ['menus_id'=>7,'ingridients_id'=>1, 'quantity'=>'0.05','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>7,'ingridients_id'=>11,'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>7,'ingridients_id'=>12,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Tahu Tempe Goreng (8)
+            ['menus_id'=>8,'ingridients_id'=>12,'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
+            // Salad Buah (9)
+            ['menus_id'=>9,'ingridients_id'=>17,'quantity'=>'0.1', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>9,'ingridients_id'=>16,'quantity'=>'0.05','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>9,'ingridients_id'=>13,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Es Teh Manis (10)
+            ['menus_id'=>10,'ingridients_id'=>14,'quantity'=>'1',   'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>10,'ingridients_id'=>13,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Jus Alpukat (11)
+            ['menus_id'=>11,'ingridients_id'=>17,'quantity'=>'0.2', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>11,'ingridients_id'=>16,'quantity'=>'0.1', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>11,'ingridients_id'=>13,'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
+            // Es Jeruk (12) — no citrus ingredient; approximate with sugar
+            ['menus_id'=>12,'ingridients_id'=>13,'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
+            // Air Mineral (13) — no bottled-water ingredient; approximate with sugar token
+            ['menus_id'=>13,'ingridients_id'=>13,'quantity'=>'0.001','created_at'=>now(),'updated_at'=>now()],
+            // Kopi Hitam (14)
+            ['menus_id'=>14,'ingridients_id'=>15,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Es Krim Vanilla (15)
+            ['menus_id'=>15,'ingridients_id'=>16,'quantity'=>'0.05','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>15,'ingridients_id'=>13,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Pisang Goreng Keju (16)
+            ['menus_id'=>16,'ingridients_id'=>12,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>16,'ingridients_id'=>16,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>16,'ingridients_id'=>13,'quantity'=>'0.02','created_at'=>now(),'updated_at'=>now()],
+            // Kentang Goreng (17)
+            ['menus_id'=>17,'ingridients_id'=>18,'quantity'=>'0.2', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>17,'ingridients_id'=>12,'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
+            // Onion Ring (18) — no onion-ring ingredient; approximate with shallot + oil
+            ['menus_id'=>18,'ingridients_id'=>6, 'quantity'=>'0.1', 'created_at'=>now(),'updated_at'=>now()],
+            ['menus_id'=>18,'ingridients_id'=>12,'quantity'=>'0.03','created_at'=>now(),'updated_at'=>now()],
         ]);
 
         // Sample orders (past 7 days)

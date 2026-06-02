@@ -15,7 +15,7 @@ class CustomerOrderController extends Controller
     public function show($tableId)
     {
         $table = Table::findOrFail($tableId);
-        $menus = Menu::with('category')->where('availability', 1)->get();
+        $menus = Menu::with(['category', 'components.ingridient.inventories'])->get();
         $categories = CategoryMenu::all();
 
         return view('customer.order', compact('table', 'menus', 'categories'));
@@ -33,6 +33,18 @@ class CustomerOrderController extends Controller
             'name' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:500',
         ]);
+
+        foreach ($data['items'] as $item) {
+            $menu = Menu::find($item['menu_id']);
+            $cap = $menu?->stockCapacity() ?? 0;
+            if ((int) $item['quantity'] > $cap) {
+                $name = $menu->name ?? 'This item';
+                $msg = $cap === 0
+                    ? $name.' is sold out.'
+                    : 'Only '.$cap.' portion(s) of '.$name.' available.';
+                return response()->json(['success' => false, 'message' => $msg], 422);
+            }
+        }
 
         $subtotal = collect($data['items'])->sum('subtotal');
         $total = round($subtotal * 1.11);

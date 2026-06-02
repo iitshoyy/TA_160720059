@@ -171,24 +171,29 @@
 </div>
 
 @foreach($categories ?? [] as $cat)
-@php $catMenus = $menus->where('categoryMenus_id', $cat->id)->where('availability', 1); @endphp
+@php $catMenus = $menus->where('categoryMenus_id', $cat->id); @endphp
 @if($catMenus->count() > 0)
 <div class="category-section" data-cat="{{ $cat->id }}">
     <div class="section-title">{{ $cat->name }}</div>
     <div class="menu-list">
         @foreach($catMenus as $menu)
-        <div class="menu-card">
+        @php($cap = $menu->stockCapacity())
+        <div class="menu-card" @if($cap <= 0) style="opacity:0.5;" @endif>
             <div class="menu-emoji">🍽️</div>
             <div class="menu-info">
                 <div class="name">{{ $menu->name }}</div>
                 @if($menu->description)<div class="desc">{{ Str::limit($menu->description, 60) }}</div>@endif
                 <div class="price">Rp {{ number_format($menu->price) }}</div>
             </div>
+            @if($cap > 0)
             <div class="qty-control">
-                <button type="button" class="qty-btn" onclick="removeItem('{{ $menu->id }}', '{{ $menu->name }}', {{ $menu->price }}, this)" id="minus-{{ $menu->id }}" style="display:none;">−</button>
+                <button type="button" class="qty-btn" onclick="removeItem('{{ $menu->id }}')" id="minus-{{ $menu->id }}" style="display:none;">−</button>
                 <span class="qty-num" id="qty-{{ $menu->id }}" style="display:none;">0</span>
-                <button type="button" class="qty-btn add" onclick="addItem('{{ $menu->id }}', '{{ $menu->name }}', {{ $menu->price }}, this)">+</button>
+                <button type="button" class="qty-btn add" onclick="addItem('{{ $menu->id }}', '{{ addslashes($menu->name) }}', {{ $menu->price }}, {{ $cap }})">+</button>
             </div>
+            @else
+            <div class="qty-control"><span style="font-size:0.75rem;color:var(--muted);">Sold Out</span></div>
+            @endif
         </div>
         @endforeach
     </div>
@@ -228,8 +233,12 @@
 <script>
 let cart = {};
 
-function addItem(id, name, price, btn) {
-    if (!cart[id]) cart[id] = { id, name, price, qty: 0 };
+function addItem(id, name, price, cap) {
+    if (!cart[id]) cart[id] = { id, name, price, qty: 0, cap };
+    if (cart[id].qty + 1 > cap) {
+        alert('Only ' + cap + ' portion(s) of ' + name + ' available.');
+        return;
+    }
     cart[id].qty++;
     document.getElementById('qty-' + id).textContent = cart[id].qty;
     document.getElementById('qty-' + id).style.display = 'inline';
@@ -237,7 +246,7 @@ function addItem(id, name, price, btn) {
     updateCartUI();
 }
 
-function removeItem(id, name, price, btn) {
+function removeItem(id) {
     if (!cart[id]) return;
     cart[id].qty--;
     if (cart[id].qty <= 0) {
@@ -303,7 +312,9 @@ async function submitOrder() {
             const data = await resp.json();
             window.location.href = data.status_url;
         } else {
-            alert('Failed to place order. Please try again or call our staff.');
+            let msg = 'Failed to place order. Please try again or call our staff.';
+            try { const data = await resp.json(); if (data.message) msg = data.message; } catch (e) {}
+            alert(msg);
         }
     } catch (e) {
         alert('Network error. Please try again.');

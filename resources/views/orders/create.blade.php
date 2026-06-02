@@ -90,16 +90,18 @@
         </div>
         <div class="menu-grid" id="menuGrid">
             @foreach($menus ?? [] as $menu)
-            <div class="menu-item {{ $menu->availability ? '' : 'unavailable' }}"
+            @php($cap = $menu->stockCapacity())
+            <div class="menu-item {{ $cap > 0 ? '' : 'unavailable' }}"
                  data-id="{{ $menu->id }}"
                  data-name="{{ $menu->name }}"
                  data-price="{{ $menu->price }}"
+                 data-cap="{{ $cap }}"
                  data-category="{{ $menu->categoryMenus_id }}"
-                 onclick="{{ $menu->availability ? 'addItem(this)' : '' }}">
+                 onclick="{{ $cap > 0 ? 'addItem(this)' : '' }}">
                 <div class="item-emoji">🍽️</div>
                 <div class="item-body">
                     <div class="item-name">{{ $menu->name }}</div>
-                    <div class="item-price">Rp {{ number_format($menu->price) }}@if(!$menu->availability) <span style="color:var(--danger); margin-left:6px;">· Unavailable</span>@endif</div>
+                    <div class="item-price">Rp {{ number_format($menu->price) }}@if($cap <= 0) <span style="color:var(--danger); margin-left:6px;">· Sold Out</span>@endif</div>
                 </div>
             </div>
             @endforeach
@@ -181,10 +183,16 @@ function addItem(el) {
     const id = el.dataset.id;
     const name = el.dataset.name;
     const price = parseFloat(el.dataset.price);
+    const cap = parseInt(el.dataset.cap, 10);
+    const current = cart[id] ? cart[id].qty : 0;
+    if (current + 1 > cap) {
+        alert('Only ' + cap + ' portion(s) of ' + name + ' available (stock limit).');
+        return;
+    }
     if (cart[id]) {
         cart[id].qty++;
     } else {
-        cart[id] = { id, name, price, qty: 1 };
+        cart[id] = { id, name, price, qty: 1, cap };
     }
     renderCart();
 }
@@ -222,6 +230,10 @@ function renderCart() {
 }
 
 function changeQty(id, delta) {
+    if (delta > 0 && cart[id].cap !== undefined && cart[id].qty + 1 > cart[id].cap) {
+        alert('Only ' + cart[id].cap + ' portion(s) of ' + cart[id].name + ' available (stock limit).');
+        return;
+    }
     cart[id].qty += delta;
     if (cart[id].qty <= 0) delete cart[id];
     renderCart();

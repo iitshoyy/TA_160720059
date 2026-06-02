@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -23,7 +24,7 @@ class ReportController extends Controller
         $cnt = (clone $base)->count();
         $summary = ['revenue' => $rev, 'orders' => $cnt, 'avg_order' => $cnt ? $rev / $cnt : 0, 'tax' => $rev * 0.11 / 1.11];
 
-        $topItems = \DB::table('order_details')
+        $topItems = DB::table('order_details')
             ->join('orders', 'order_details.orders_id', '=', 'orders.id')
             ->join('menus', 'order_details.menus_id', '=', 'menus.id')
             ->where('orders.status', 'completed')->whereBetween('orders.order_date', [$from, $to])

@@ -75,7 +75,8 @@ Route::middleware(['auth', 'role:Admin,Chef'])->group(function () {
     Route::resource('inventory', InventoryController::class)->except(['create', 'show', 'edit', 'update']);
     Route::post('/inventory/adjust', [InventoryController::class, 'adjust'])->name('inventory.adjust');
     Route::resource('menus', MenuController::class)->except(['create', 'show', 'edit']);
-    Route::patch('/menus/{id}/toggle', [MenuController::class, 'toggleAvailability'])->name('menus.toggle');
+    Route::get('/menus/{id}/recipe', [MenuController::class, 'recipe'])->name('menus.recipe');
+    Route::put('/menus/{id}/recipe', [MenuController::class, 'updateRecipe'])->name('menus.recipe.update');
 });
 
 // ---------- Floor management: Admin + Kasir ----------

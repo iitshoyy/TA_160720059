@@ -19,10 +19,23 @@
         .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
         .btn{width:100%;padding:10px;background:#c9a84c;color:#000;border:1px solid #c9a84c;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
         .btn:hover{background:#b8960a;border-color:#b8960a}
+        .btn:disabled{background:#d8cfb8;border-color:#d8cfb8;color:#8a7d6b;cursor:not-allowed}
         .success{color:#155724;border:1px solid #155724;padding:10px 14px;margin-bottom:16px;font-size:.875rem}
+        .errors{color:#721c24;border:1px solid #721c24;padding:10px 14px;margin-bottom:16px;font-size:.875rem}
         .section-title{font-size:1.05rem;color:#2c2416;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #e8e0d0;font-weight:600}
         .info-box{border:1px solid #e8e0d0;padding:12px;margin-bottom:16px;font-size:.82rem;color:#6b6455;line-height:1.6}
-        @media(max-width:480px){.form-row{grid-template-columns:1fr}}
+        .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+        .slot{padding:8px 4px;border:1px solid #e8e0d0;background:#fff;text-align:center;cursor:pointer;font-size:.85rem;font-family:inherit}
+        .slot.active{background:#1a1814;color:#c9a84c;border-color:#1a1814}
+        .tables{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+        .table-card{padding:12px 4px;border:1px solid #e8e0d0;background:#fff;text-align:center;cursor:pointer}
+        .table-card .tname{font-weight:600}
+        .table-card .tcap{font-size:.78rem;color:#6b6455}
+        .table-card.active{background:#1a1814;border-color:#1a1814}
+        .table-card.active .tname,.table-card.active .tcap{color:#c9a84c}
+        .table-card.disabled{opacity:.4;cursor:not-allowed;background:#f0ebe0}
+        .hint{font-size:.8rem;color:#8a7d6b;margin-top:8px}
+        @media(max-width:480px){.form-row{grid-template-columns:1fr}.slots{grid-template-columns:repeat(3,1fr)}}
     </style>
 </head>
 <body>
@@ -34,15 +47,18 @@
     @if(session('success'))
     <div class="success">✅ {{ session('success') }}</div>
     @endif
+    @if($errors->any())
+    <div class="errors">⚠️ {{ $errors->first() }}</div>
+    @endif
 
     <div class="card">
         <div class="section-title">Book Your Table</div>
         <div class="info-box">
             📞 We'll confirm your reservation via phone/WhatsApp within 30 minutes.<br>
-            ⏰ Reservations available daily from 10:00 – 21:00.<br>
+            ⏰ Reservations available daily from 10:00 – 20:00.<br>
             👥 For groups of 10+, please call us directly.
         </div>
-        <form method="POST" action="{{ route('reservation.public.store') }}">
+        <form method="POST" action="{{ route('reservation.public.store') }}" id="resForm">
         @csrf
             <div class="form-row">
                 <div class="form-group"><label>Full Name *</label><input name="customer_name" required placeholder="Your full name" value="{{ old('customer_name') }}"></div>
@@ -50,18 +66,128 @@
             </div>
             <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="Optional" value="{{ old('email') }}"></div>
             <div class="form-row">
-                <div class="form-group"><label>Date *</label><input type="date" name="reservation_date" required min="{{ date('Y-m-d') }}" value="{{ old('reservation_date') }}"></div>
-                <div class="form-group"><label>Time *</label><input type="time" name="reservation_time" required min="10:00" max="21:00" value="{{ old('reservation_time') }}"></div>
+                <div class="form-group"><label>Date *</label><input type="date" id="dateInput" name="reservation_date" required min="{{ date('Y-m-d') }}" value="{{ old('reservation_date', date('Y-m-d')) }}"></div>
+                <div class="form-group"><label>Number of Guests *</label>
+                    <select name="guests" id="guestsInput" required>
+                        @for($i=1;$i<=12;$i++)<option value="{{ $i }}" {{ old('guests',2)==$i?'selected':'' }}>{{ $i }} {{ $i==1?'person':'people' }}</option>@endfor
+                    </select>
+                </div>
             </div>
-            <div class="form-group"><label>Number of Guests *</label>
-                <select name="guests" required>
-                    @for($i=1;$i<=12;$i++)<option value="{{ $i }}" {{ old('guests')==$i?'selected':'' }}>{{ $i }} {{ $i==1?'person':'people' }}</option>@endfor
-                </select>
+
+            <div class="form-group">
+                <label>Time Slot *</label>
+                <div class="slots" id="slotGrid">
+                    @foreach($slots as $slot)
+                    <div class="slot" data-slot="{{ $slot }}">{{ $slot }}</div>
+                    @endforeach
+                </div>
+                <input type="hidden" name="reservation_time" id="timeInput" value="{{ old('reservation_time') }}">
             </div>
+
+            <div class="form-group">
+                <label>Choose a Table *</label>
+                <div class="tables" id="tableGrid">
+                    @foreach($tables as $t)
+                    <div class="table-card disabled" data-table-id="{{ $t->id }}" data-capacity="{{ $t->capacity }}">
+                        <div class="tname">{{ $t->name }}</div>
+                        <div class="tcap">👥 {{ $t->capacity }}</div>
+                    </div>
+                    @endforeach
+                </div>
+                <input type="hidden" name="table_id" id="tableInput" value="{{ old('table_id') }}">
+                <div class="hint" id="tableHint">Pick a date and time slot to see available tables.</div>
+            </div>
+
             <div class="form-group"><label>Special Notes / Requests</label><textarea name="notes" rows="3" placeholder="Birthday celebration, dietary restrictions, special seating requests...">{{ old('notes') }}</textarea></div>
-            <button type="submit" class="btn">📅 Submit Reservation</button>
+            <button type="submit" class="btn" id="submitBtn" disabled>📅 Submit Reservation</button>
         </form>
     </div>
 </div>
+
+<script>
+(function () {
+    const availabilityUrl = "{{ route('reservation.availability') }}";
+    const dateInput  = document.getElementById('dateInput');
+    const guestsInput= document.getElementById('guestsInput');
+    const timeInput  = document.getElementById('timeInput');
+    const tableInput = document.getElementById('tableInput');
+    const slotGrid   = document.getElementById('slotGrid');
+    const tableGrid  = document.getElementById('tableGrid');
+    const tableHint  = document.getElementById('tableHint');
+    const submitBtn  = document.getElementById('submitBtn');
+
+    function syncSubmit() {
+        submitBtn.disabled = !(timeInput.value && tableInput.value);
+    }
+
+    function clearTableSelection() {
+        tableInput.value = '';
+        tableGrid.querySelectorAll('.table-card').forEach(c => c.classList.remove('active'));
+        syncSubmit();
+    }
+
+    async function refreshTables() {
+        const date = dateInput.value, time = timeInput.value, guests = guestsInput.value;
+        const cards = tableGrid.querySelectorAll('.table-card');
+
+        if (!date || !time) {
+            cards.forEach(c => c.classList.add('disabled'));
+            tableHint.textContent = 'Pick a date and time slot to see available tables.';
+            clearTableSelection();
+            return;
+        }
+
+        tableHint.textContent = 'Checking availability…';
+        let available = [];
+        try {
+            const url = `${availabilityUrl}?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&guests=${encodeURIComponent(guests)}`;
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (res.ok) { available = (await res.json()).available || []; }
+        } catch (e) { /* network error → treat as none available */ }
+
+        let freeCount = 0;
+        cards.forEach(c => {
+            const id = parseInt(c.dataset.tableId, 10);
+            const ok = available.includes(id);
+            c.classList.toggle('disabled', !ok);
+            if (ok) freeCount++;
+            if (!ok && tableInput.value === String(id)) { clearTableSelection(); }
+        });
+
+        tableHint.textContent = freeCount
+            ? `${freeCount} table(s) available — tap one to select.`
+            : 'No tables available for this date and time. Try another slot.';
+    }
+
+    slotGrid.addEventListener('click', e => {
+        const slot = e.target.closest('.slot');
+        if (!slot) return;
+        slotGrid.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
+        slot.classList.add('active');
+        timeInput.value = slot.dataset.slot;
+        clearTableSelection();
+        refreshTables();
+    });
+
+    tableGrid.addEventListener('click', e => {
+        const card = e.target.closest('.table-card');
+        if (!card || card.classList.contains('disabled')) return;
+        tableGrid.querySelectorAll('.table-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        tableInput.value = card.dataset.tableId;
+        syncSubmit();
+    });
+
+    dateInput.addEventListener('change', refreshTables);
+    guestsInput.addEventListener('change', refreshTables);
+
+    // Restore old() slot selection after a validation redirect.
+    if (timeInput.value) {
+        const pre = slotGrid.querySelector(`.slot[data-slot="${timeInput.value}"]`);
+        if (pre) pre.classList.add('active');
+        refreshTables();
+    }
+})();
+</script>
 </body>
 </html>

@@ -40,6 +40,7 @@ Route::get('/order/status/{id}', [CustomerOrderController::class, 'status'])->na
 Route::get('/order/status/{id}/state', [CustomerOrderController::class, 'statusState'])->name('customer.order.status.state');
 Route::get('/reserve', [ReservationController::class, 'publicForm'])->name('reservation.public');
 Route::post('/reserve', [ReservationController::class, 'publicStore'])->name('reservation.public.store');
+Route::get('/reserve/availability', [ReservationController::class, 'availability'])->name('reservation.availability');
 
 // ---------- Authenticated (any role) ----------
 Route::middleware(['auth'])->group(function () {

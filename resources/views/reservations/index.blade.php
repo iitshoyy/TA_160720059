@@ -63,6 +63,9 @@
                     <td style="font-size:0.78rem; color:var(--muted); max-width:150px;">{{ Str::limit($res->notes, 40) }}</td>
                     <td>
                         <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <a href="{{ $res->whatsappUrl() }}" target="_blank" rel="noopener"
+                               class="btn btn-sm" style="background:#25D366; color:#0f0e0c; border-color:#25D366;"
+                               title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></a>
                             @if($res->status === 'pending')
                             <form method="POST" action="{{ route('reservations.update-status', $res->id) }}">
                                 @csrf @method('PATCH')
@@ -103,7 +106,11 @@
             <div style="display:flex; justify-content:space-between; align-items:start;">
                 <div>
                     <div class="fw-600 text-cream">{{ $res->customer_name }}</div>
-                    <div style="font-size:0.78rem; color:var(--muted);">{{ $res->phone }}</div>
+                    <div style="font-size:0.78rem; color:var(--muted);">
+                        {{ $res->phone }}
+                        <a href="{{ $res->whatsappUrl() }}" target="_blank" rel="noopener"
+                           style="color:#25D366; margin-left:6px;" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
                 </div>
                 <span class="status status-{{ $res->status }}">{{ ucfirst($res->status) }}</span>
             </div>

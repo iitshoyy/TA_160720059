@@ -34,6 +34,13 @@
         .table-card.active{background:#1a1814;border-color:#1a1814}
         .table-card.active .tname,.table-card.active .tcap{color:#c9a84c}
         .table-card.disabled{opacity:.4;cursor:not-allowed;background:#f0ebe0}
+        .map-legend{font-size:.78rem;color:#8a7d6b;margin-bottom:8px}
+        .res-map-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .res-map{display:grid;grid-template-columns:repeat(12,minmax(46px,1fr));grid-auto-rows:minmax(46px,auto);gap:6px;min-width:560px;padding:12px;background:#f0ebe0;border:1px solid #e8e0d0}
+        .map-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px}
+        .map-card .tname{font-size:.78rem;line-height:1.1}
+        .map-card .tcap{font-size:.68rem}
+        .res-list-label{font-size:.82rem;color:#6b6455;margin:12px 0 6px}
         .hint{font-size:.8rem;color:#8a7d6b;margin-top:8px}
         @media(max-width:480px){.form-row{grid-template-columns:1fr}.slots{grid-template-columns:repeat(3,1fr)}}
     </style>
@@ -86,13 +93,36 @@
 
             <div class="form-group">
                 <label>Choose a Table *</label>
-                <div class="tables" id="tableGrid">
-                    @foreach($tables as $t)
-                    <div class="table-card disabled" data-table-id="{{ $t->id }}" data-capacity="{{ $t->capacity }}">
-                        <div class="tname">{{ $t->name }}</div>
-                        <div class="tcap">👥 {{ $t->capacity }}</div>
+                @php
+                    $placed = $tables->filter(fn ($t) => ! is_null($t->pos_x) && ! is_null($t->pos_y));
+                    $unplaced = $tables->filter(fn ($t) => is_null($t->pos_x) || is_null($t->pos_y));
+                @endphp
+                <div id="tableGrid">
+                    @if($placed->count())
+                    <div class="map-legend">🟢 tap an available table · ⬜ unavailable</div>
+                    <div class="res-map-wrap">
+                        <div class="res-map">
+                            @foreach($placed as $t)
+                            <div class="table-card map-card disabled" data-table-id="{{ $t->id }}" data-capacity="{{ $t->capacity }}" style="grid-column:{{ $t->pos_x + 1 }};grid-row:{{ $t->pos_y + 1 }};">
+                                <div class="tname">{{ $t->name }}</div>
+                                <div class="tcap">👥 {{ $t->capacity }}</div>
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
-                    @endforeach
+                    @endif
+
+                    @if($unplaced->count())
+                    @if($placed->count())<div class="res-list-label">Other tables</div>@endif
+                    <div class="tables">
+                        @foreach($unplaced as $t)
+                        <div class="table-card disabled" data-table-id="{{ $t->id }}" data-capacity="{{ $t->capacity }}">
+                            <div class="tname">{{ $t->name }}</div>
+                            <div class="tcap">👥 {{ $t->capacity }}</div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
                 </div>
                 <input type="hidden" name="table_id" id="tableInput" value="{{ old('table_id') }}">
                 <div class="hint" id="tableHint">Pick a date and time slot to see available tables.</div>

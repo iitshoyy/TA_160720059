@@ -9,6 +9,60 @@
     <button class="btn btn-gold" onclick="openModal('addTableModal')"><i class="fas fa-plus"></i> Add Table</button>
 </div>
 
+@php
+    $statusColor = fn ($s) => $s === 'available' ? '#27ae60' : ($s === 'occupied' ? '#c0392b' : '#2980b9');
+    $fpPlaced = $tables->filter(fn ($t) => ! is_null($t->pos_x) && ! is_null($t->pos_y));
+    $fpUnplaced = $tables->filter(fn ($t) => is_null($t->pos_x) || is_null($t->pos_y));
+    $fpRows = max(6, ($fpPlaced->max('pos_y') ?? -1) + 2);
+    $fpCellMap = [];
+    foreach ($fpPlaced as $t) { $fpCellMap[$t->pos_x.','.$t->pos_y] = $t; }
+@endphp
+
+<div class="fp-section">
+    <div class="fp-bar">
+        <div>
+            <h2 class="fp-title">Floor Plan</h2>
+            <p class="fp-sub">Drag tables onto the grid to match your room. Drag a table back to the tray to unplace it.</p>
+        </div>
+        <div class="fp-actions">
+            <span id="fpDirty" class="fp-dirty">Unsaved changes</span>
+            <button class="btn btn-gold" id="fpSave"><i class="fas fa-save"></i> Save Layout</button>
+        </div>
+    </div>
+
+    <div class="fp-stage">
+        <div class="fp-tray" id="fpTray" data-drop="tray">
+            <div class="fp-tray-title">Unplaced</div>
+            @foreach($fpUnplaced as $t)
+            <div class="fp-chip" draggable="true" data-id="{{ $t->id }}" data-cap="{{ $t->capacity }}" style="border-left-color:{{ $statusColor($t->status) }}">
+                <span class="fp-chip-name">{{ $t->name }}</span>
+                <span class="fp-chip-cap">👥 {{ $t->capacity }}</span>
+            </div>
+            @endforeach
+            <div class="fp-tray-empty" {{ $fpUnplaced->count() ? 'style=display:none' : '' }}>All tables placed</div>
+        </div>
+
+        <div class="fp-grid-scroll">
+            <div class="fp-grid" id="fpGrid">
+                @for($y = 0; $y < $fpRows; $y++)
+                    @for($x = 0; $x < 12; $x++)
+                    <div class="fp-cell" data-x="{{ $x }}" data-y="{{ $y }}">
+                        @isset($fpCellMap["$x,$y"])
+                        @php $t = $fpCellMap["$x,$y"]; @endphp
+                        <div class="fp-chip" draggable="true" data-id="{{ $t->id }}" data-cap="{{ $t->capacity }}" data-x="{{ $x }}" data-y="{{ $y }}" style="border-left-color:{{ $statusColor($t->status) }}">
+                            <span class="fp-chip-name">{{ $t->name }}</span>
+                            <span class="fp-chip-cap">👥 {{ $t->capacity }}</span>
+                        </div>
+                        @endisset
+                    </div>
+                    @endfor
+                @endfor
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="fp-title" style="margin-bottom:12px;">All Tables</h2>
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
     @forelse($tables as $table)
     <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid {{ $table->status==='available'?'#27ae60':($table->status==='occupied'?'#c0392b':'#2980b9') }};padding:16px;position:relative;">
@@ -84,4 +138,113 @@ function openEditTable(t) {
     openModal('editTableModal');
 }
 </script>
+<script>
+(function () {
+    const grid    = document.getElementById('fpGrid');
+    const tray    = document.getElementById('fpTray');
+    const saveBtn = document.getElementById('fpSave');
+    const dirtyEl = document.getElementById('fpDirty');
+    if (!grid) return;
+
+    const CSRF     = document.querySelector('meta[name=csrf-token]').content;
+    const SAVE_URL = "{{ route('tables.layout') }}";
+    let dragged = null;
+
+    function markDirty() { dirtyEl.classList.add('show'); }
+    function syncTrayEmpty() {
+        const empty = tray.querySelector('.fp-tray-empty');
+        if (empty) empty.style.display = tray.querySelector('.fp-chip') ? 'none' : '';
+    }
+
+    document.addEventListener('dragstart', e => {
+        const chip = e.target.closest('.fp-chip');
+        if (!chip) return;
+        dragged = chip;
+        chip.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', chip.dataset.id);
+    });
+    document.addEventListener('dragend', () => {
+        if (dragged) dragged.classList.remove('dragging');
+        dragged = null;
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    });
+
+    function allowDrop(el) {
+        el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    }
+
+    grid.querySelectorAll('.fp-cell').forEach(cell => {
+        allowDrop(cell);
+        cell.addEventListener('drop', e => {
+            e.preventDefault();
+            cell.classList.remove('drag-over');
+            if (!dragged) return;
+            const occupant = cell.querySelector('.fp-chip');
+            if (occupant && occupant !== dragged) return; // cell taken — reject
+            cell.appendChild(dragged);
+            dragged.dataset.x = cell.dataset.x;
+            dragged.dataset.y = cell.dataset.y;
+            syncTrayEmpty();
+            markDirty();
+        });
+    });
+
+    allowDrop(tray);
+    tray.addEventListener('drop', e => {
+        e.preventDefault();
+        tray.classList.remove('drag-over');
+        if (!dragged) return;
+        tray.appendChild(dragged);
+        delete dragged.dataset.x;
+        delete dragged.dataset.y;
+        syncTrayEmpty();
+        markDirty();
+    });
+
+    saveBtn.addEventListener('click', () => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = SAVE_URL;
+        const add = (n, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; form.appendChild(i); };
+        add('_token', CSRF);
+        add('_method', 'PATCH');
+        let idx = 0;
+        document.querySelectorAll('.fp-chip').forEach(chip => {
+            add(`positions[${idx}][id]`, chip.dataset.id);
+            add(`positions[${idx}][pos_x]`, chip.dataset.x ?? '');
+            add(`positions[${idx}][pos_y]`, chip.dataset.y ?? '');
+            idx++;
+        });
+        document.body.appendChild(form);
+        form.submit();
+    });
+})();
+</script>
+@endpush
+@push('styles')
+<style>
+    .fp-section{background:var(--surface);border:1px solid var(--border);padding:18px;margin-bottom:28px;}
+    .fp-bar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+    .fp-title{font-size:1.1rem;color:var(--cream);margin:0;}
+    .fp-sub{color:var(--muted);font-size:.82rem;margin:4px 0 0;}
+    .fp-actions{display:flex;align-items:center;gap:12px;}
+    .fp-dirty{display:none;color:#c9a84c;font-size:.8rem;}
+    .fp-dirty.show{display:inline;}
+    .fp-stage{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+    .fp-tray{flex:0 0 180px;border:1px dashed var(--border);padding:10px;min-height:120px;}
+    .fp-tray.drag-over,.fp-cell.drag-over{outline:2px dashed #c9a84c;outline-offset:-2px;}
+    .fp-tray-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+    .fp-tray-empty{color:var(--muted);font-size:.8rem;font-style:italic;}
+    .fp-grid-scroll{flex:1 1 480px;overflow-x:auto;}
+    .fp-grid{display:grid;grid-template-columns:repeat(12,minmax(54px,1fr));gap:4px;min-width:660px;}
+    .fp-cell{aspect-ratio:1;border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.02);}
+    .fp-chip{background:var(--surface);border:1px solid var(--border);border-left:3px solid #27ae60;padding:6px 4px;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;text-align:center;border-radius:3px;}
+    .fp-chip:active{cursor:grabbing;}
+    .fp-chip.dragging{opacity:.4;}
+    .fp-chip-name{font-size:.72rem;color:var(--cream);font-weight:600;line-height:1.1;word-break:break-word;}
+    .fp-chip-cap{font-size:.65rem;color:var(--muted);margin-top:2px;}
+    .fp-tray .fp-chip{height:auto;margin-bottom:8px;flex-direction:row;gap:6px;justify-content:flex-start;padding:8px;}
+</style>
 @endpush

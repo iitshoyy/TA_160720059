@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Table;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TableController extends Controller
@@ -39,6 +41,42 @@ class TableController extends Controller
         $table->delete();
 
         return back()->with('success', 'Table deleted!');
+    }
+
+    public function saveLayout(Request $req)
+    {
+        $data = $req->validate([
+            'positions' => 'present|array',
+            'positions.*.id' => 'required|exists:tables,id',
+            'positions.*.pos_x' => 'nullable|integer|min:0|max:11',
+            'positions.*.pos_y' => 'nullable|integer|min:0',
+        ]);
+
+        // One table per cell: reject duplicate occupied (x,y) pairs in the payload.
+        $seen = [];
+        foreach ($data['positions'] as $p) {
+            if ($p['pos_x'] === null || $p['pos_y'] === null) {
+                continue;
+            }
+            $cell = $p['pos_x'].','.$p['pos_y'];
+            if (isset($seen[$cell])) {
+                throw ValidationException::withMessages([
+                    'positions' => 'Two tables share the same cell — please spread them out.',
+                ]);
+            }
+            $seen[$cell] = true;
+        }
+
+        DB::transaction(function () use ($data) {
+            foreach ($data['positions'] as $p) {
+                Table::where('id', $p['id'])->update([
+                    'pos_x' => $p['pos_x'],
+                    'pos_y' => $p['pos_y'],
+                ]);
+            }
+        });
+
+        return back()->with('success', 'Layout saved!');
     }
 
     public function generateQR($id)

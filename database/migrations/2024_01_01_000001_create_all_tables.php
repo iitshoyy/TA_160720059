@@ -176,6 +176,7 @@ return new class extends Migration {
             $table->foreignId('purchase_order_id')->constrained('purchase_orders');
             $table->foreignId('ingridient_id')->constrained('ingridients');
             $table->decimal('quantity', 10, 2);
+            $table->decimal('received_quantity', 10, 2)->nullable();
             $table->string('unit_price', 45);
             $table->string('subtotal', 45);
             $table->timestamps();

@@ -26,9 +26,7 @@
                         <div style="display:flex;gap:6px;">
                             <a href="{{ route('purchase-orders.show',$po->id) }}" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
                             @if($po->status==='pending' || $po->status==='sent')
-                            <form method="POST" action="{{ route('purchase-orders.receive',$po->id) }}">@csrf @method('PATCH')
-                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Mark as received? This will update stock levels.')"><i class="fas fa-check"></i> Receive</button>
-                            </form>
+                            <button type="button" class="btn btn-success btn-sm" onclick="openModal('receiveModal{{ $po->id }}')"><i class="fas fa-check"></i> Receive</button>
                             @endif
                         </div>
                     </td>
@@ -41,6 +39,39 @@
     </div>
     <div style="margin-top:16px;">{{ $purchaseOrders->links() }}</div>
 </div>
+
+@foreach($purchaseOrders as $po)
+    @if($po->status==='pending' || $po->status==='sent')
+    <div class="modal-overlay" id="receiveModal{{ $po->id }}">
+        <div class="modal" style="max-width:640px;">
+            <div class="modal-header"><div class="modal-title">Receive PO #{{ str_pad($po->id,4,'0',STR_PAD_LEFT) }}</div><button class="modal-close" onclick="closeModal('receiveModal{{ $po->id }}')"><i class="fas fa-times"></i></button></div>
+            <form method="POST" action="{{ route('purchase-orders.receive',$po->id) }}">@csrf @method('PATCH')
+            <div class="modal-body">
+                <p class="text-muted" style="margin-bottom:14px;font-size:.875rem;">Confirm the actual quantity received for each item. Inventory will be credited with these amounts.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Ingredient</th><th>Ordered</th><th style="width:140px;">Received</th></tr></thead>
+                        <tbody>
+                            @foreach($po->items as $item)
+                            <tr>
+                                <td class="fw-500">{{ $item->ingridient->name ?? 'Unknown' }} <span class="text-muted">({{ $item->ingridient->unit ?? '-' }})</span></td>
+                                <td>{{ number_format($item->quantity,2) }}</td>
+                                <td><input type="number" name="received[{{ $item->id }}]" class="form-control" step="0.01" min="0" value="{{ rtrim(rtrim(number_format($item->quantity,2,'.',''),'0'),'.') }}" required></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('receiveModal{{ $po->id }}')">Cancel</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Confirm Receipt</button>
+            </div>
+            </form>
+        </div>
+    </div>
+    @endif
+@endforeach
 
 <div class="modal-overlay" id="addPOModal">
     <div class="modal" style="max-width:700px;">

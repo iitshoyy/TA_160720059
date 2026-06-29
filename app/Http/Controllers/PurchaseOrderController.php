@@ -62,21 +62,31 @@ class PurchaseOrderController extends Controller
         return view('purchase-orders.show', compact('po'));
     }
 
-    public function markReceived($id)
+    public function markReceived(Request $req, $id)
     {
-        DB::transaction(function () use ($id) {
+        $data = $req->validate([
+            'received' => 'nullable|array',
+            'received.*' => 'numeric|min:0',
+        ]);
+        $received = $data['received'] ?? [];
+
+        DB::transaction(function () use ($id, $received) {
             $po = PurchaseOrder::with('items')->lockForUpdate()->findOrFail($id);
             if ($po->status === 'received') {
                 return; // idempotent — don't double-credit stock if button is double-clicked
             }
             $po->update(['status' => 'received']);
             foreach ($po->items as $item) {
+                // Confirmed quantity from the receive form; falls back to ordered qty.
+                $qty = array_key_exists($item->id, $received) ? (float) $received[$item->id] : (float) $item->quantity;
+                $item->update(['received_quantity' => $qty]);
+
                 $inv = Inventory::firstOrCreate(
                     ['ingridient_id' => $item->ingridient_id],
                     ['quantity_on_hand' => 0, 'last_updated' => now()]
                 );
                 $inv->update([
-                    'quantity_on_hand' => $inv->quantity_on_hand + $item->quantity,
+                    'quantity_on_hand' => $inv->quantity_on_hand + $qty,
                     'last_updated' => now(),
                 ]);
             }

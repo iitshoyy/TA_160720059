@@ -12,13 +12,20 @@
         <h3 style="color:var(--cream);margin-bottom:16px;">Order Items</h3>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Ingredient</th><th>Unit</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
+                <thead><tr><th>Ingredient</th><th>Unit</th><th>Ordered</th>@if($po->status==='received')<th>Received</th>@endif<th>Unit Price</th><th>Subtotal</th></tr></thead>
                 <tbody>
                     @foreach($po->items as $item)
+                    @php $mismatch = $po->status==='received' && $item->received_quantity !== null && (float)$item->received_quantity != (float)$item->quantity; @endphp
                     <tr>
                         <td class="fw-500">{{ $item->ingridient->name ?? 'Unknown' }}</td>
                         <td>{{ $item->ingridient->unit ?? '-' }}</td>
                         <td>{{ number_format($item->quantity,2) }}</td>
+                        @if($po->status==='received')
+                        <td class="fw-600" @if($mismatch) style="color:var(--danger,#e05a5a);" title="Differs from ordered quantity" @endif>
+                            {{ number_format($item->received_quantity ?? $item->quantity,2) }}
+                            @if($mismatch)<i class="fas fa-triangle-exclamation"></i>@endif
+                        </td>
+                        @endif
                         <td>Rp {{ number_format($item->unit_price) }}</td>
                         <td class="text-gold fw-600">Rp {{ number_format($item->subtotal) }}</td>
                     </tr>
@@ -39,11 +46,40 @@
         </div>
         @if(in_array($po->status,['pending','sent']))
         <div style="margin-top:20px;">
-            <form method="POST" action="{{ route('purchase-orders.receive',$po->id) }}">@csrf @method('PATCH')
-                <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;" onclick="return confirm('Mark as received? Stock will be updated.')"><i class="fas fa-check"></i> Mark as Received</button>
-            </form>
+            <button type="button" class="btn btn-success" style="width:100%;justify-content:center;" onclick="openModal('receiveModal')"><i class="fas fa-check"></i> Mark as Received</button>
         </div>
         @endif
     </div>
 </div>
+
+@if(in_array($po->status,['pending','sent']))
+<div class="modal-overlay" id="receiveModal">
+    <div class="modal" style="max-width:640px;">
+        <div class="modal-header"><div class="modal-title">Receive PO #{{ str_pad($po->id,4,'0',STR_PAD_LEFT) }}</div><button class="modal-close" onclick="closeModal('receiveModal')"><i class="fas fa-times"></i></button></div>
+        <form method="POST" action="{{ route('purchase-orders.receive',$po->id) }}">@csrf @method('PATCH')
+        <div class="modal-body">
+            <p class="text-muted" style="margin-bottom:14px;font-size:.875rem;">Confirm the actual quantity received for each item. Inventory will be credited with these amounts.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Ingredient</th><th>Ordered</th><th style="width:140px;">Received</th></tr></thead>
+                    <tbody>
+                        @foreach($po->items as $item)
+                        <tr>
+                            <td class="fw-500">{{ $item->ingridient->name ?? 'Unknown' }} <span class="text-muted">({{ $item->ingridient->unit ?? '-' }})</span></td>
+                            <td>{{ number_format($item->quantity,2) }}</td>
+                            <td><input type="number" name="received[{{ $item->id }}]" class="form-control" step="0.01" min="0" value="{{ rtrim(rtrim(number_format($item->quantity,2,'.',''),'0'),'.') }}" required></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeModal('receiveModal')">Cancel</button>
+            <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Confirm Receipt</button>
+        </div>
+        </form>
+    </div>
+</div>
+@endif
 @endsection

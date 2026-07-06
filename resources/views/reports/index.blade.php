@@ -62,6 +62,30 @@
     </div>
 </div>
 
+<!-- Profitability (HPP / COGS) -->
+<div class="stat-grid" style="grid-template-columns: repeat(4,1fr); margin-bottom:24px;">
+    <div class="stat-card warning">
+        <div class="stat-label">HPP (COGS)</div>
+        <div class="stat-value" style="font-size:1.6rem;">Rp {{ number_format($summary['cogs'] ?? 0) }}</div>
+        <div class="stat-sub">Cost of goods sold</div>
+    </div>
+    <div class="stat-card info">
+        <div class="stat-label">Net Sales</div>
+        <div class="stat-value" style="font-size:1.6rem;">Rp {{ number_format($summary['net_sales'] ?? 0) }}</div>
+        <div class="stat-sub">Revenue excl. tax</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-label">Gross Profit</div>
+        <div class="stat-value" style="font-size:1.6rem;">Rp {{ number_format($summary['gross_profit'] ?? 0) }}</div>
+        <div class="stat-sub">Net sales − HPP</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Profit Margin</div>
+        <div class="stat-value" style="font-size:1.6rem;">{{ number_format($summary['margin'] ?? 0, 1) }}%</div>
+        <div class="stat-sub">Gross profit / net sales</div>
+    </div>
+</div>
+
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
     <!-- Best Selling Items -->
     <div class="card">
@@ -69,7 +93,7 @@
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr><th>Item</th><th>Qty Sold</th><th>Revenue</th></tr>
+                    <tr><th>Item</th><th>Qty Sold</th><th>Revenue</th><th>HPP</th><th>Profit</th></tr>
                 </thead>
                 <tbody>
                     @forelse($topItems ?? [] as $item)
@@ -77,9 +101,11 @@
                         <td class="fw-500">{{ $item->menu_name }}</td>
                         <td>{{ $item->total_qty }}</td>
                         <td class="text-gold">Rp {{ number_format($item->total_revenue) }}</td>
+                        <td>Rp {{ number_format($item->total_cost ?? 0) }}</td>
+                        <td class="fw-500" style="color:{{ ($item->total_profit ?? 0) >= 0 ? 'var(--gold)' : '#e06666' }};">Rp {{ number_format($item->total_profit ?? 0) }}</td>
                     </tr>
                     @empty
-                    <x-empty-state colspan="3" icon="fas fa-chart-line" message="No data" />
+                    <x-empty-state colspan="5" icon="fas fa-chart-line" message="No data" />
                     @endforelse
                 </tbody>
             </table>
@@ -148,6 +174,7 @@
                     <th>Subtotal</th>
                     <th>Tax</th>
                     <th>Total</th>
+                    <th>HPP</th>
                     <th>Payment</th>
                 </tr>
             </thead>
@@ -156,6 +183,7 @@
                 @php
                     $tax = $order->total_amount * 0.11 / 1.11;
                     $sub = $order->total_amount - $tax;
+                    $hpp = $order->orderDetails->sum(fn ($d) => ($menuCost[$d->menus_id] ?? 0) * (float) $d->quantity);
                 @endphp
                 <tr>
                     <td class="text-gold">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</td>
@@ -166,10 +194,11 @@
                     <td>Rp {{ number_format($sub) }}</td>
                     <td>Rp {{ number_format($tax) }}</td>
                     <td class="fw-600 text-cream">Rp {{ number_format($order->total_amount) }}</td>
+                    <td>Rp {{ number_format($hpp) }}</td>
                     <td>{{ ucfirst($order->payment_type ?? 'Cash') }}</td>
                 </tr>
                 @empty
-                <x-empty-state colspan="9" icon="fas fa-receipt" message="No transactions in this period" />
+                <x-empty-state colspan="10" icon="fas fa-receipt" message="No transactions in this period" />
                 @endforelse
             </tbody>
         </table>

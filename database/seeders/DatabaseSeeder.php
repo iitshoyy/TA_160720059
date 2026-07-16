@@ -75,6 +75,11 @@ class DatabaseSeeder extends Seeder
             ['id'=>18,'name'=>'Onion Ring',            'description'=>'Bawang bombay goreng crispy',                                'availability'=>1,'price'=>'22000','categoryMenus_id'=>5,'created_at'=>now(),'updated_at'=>now()],
         ]);
 
+        // Floors (at least one must exist so tables can be placed on the map)
+        DB::table('floors')->insert([
+            ['id'=>1,'name'=>'Lantai 1','created_at'=>now(),'updated_at'=>now()],
+        ]);
+
         // Tables
         DB::table('tables')->insert([
             ['id'=>1, 'name'=>'Meja A1','capacity'=>2,'status'=>'available','created_at'=>now(),'updated_at'=>now()],

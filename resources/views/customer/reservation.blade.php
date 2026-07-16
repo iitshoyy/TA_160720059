@@ -35,6 +35,9 @@
         .table-card.active .tname,.table-card.active .tcap{color:#c9a84c}
         .table-card.disabled{opacity:.4;cursor:not-allowed;background:#f0ebe0}
         .map-legend{font-size:.78rem;color:#8a7d6b;margin-bottom:8px}
+        .floor-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+        .floor-pill{padding:6px 14px;border:1px solid #e8e0d0;background:#fff;font-size:.82rem;font-family:inherit;cursor:pointer;color:#6b6455}
+        .floor-pill.active{background:#1a1814;color:#c9a84c;border-color:#1a1814}
         .res-map-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
         .res-map{display:grid;grid-template-columns:repeat(12,minmax(46px,1fr));grid-auto-rows:minmax(46px,auto);gap:6px;min-width:560px;padding:12px;background:#f0ebe0;border:1px solid #e8e0d0}
         .map-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px}
@@ -94,15 +97,28 @@
             <div class="form-group">
                 <label>Choose a Table *</label>
                 @php
-                    $placed = $tables->filter(fn ($t) => ! is_null($t->pos_x) && ! is_null($t->pos_y));
-                    $unplaced = $tables->filter(fn ($t) => is_null($t->pos_x) || is_null($t->pos_y));
+                    $isPlaced = fn ($t) => ! is_null($t->floor_id) && ! is_null($t->pos_x) && ! is_null($t->pos_y);
+                    $placedByFloor = $tables->filter($isPlaced)->groupBy('floor_id');
+                    $unplaced = $tables->filter(fn ($t) => ! $isPlaced($t));
+                    // Only floors that actually have placed tables, in the given order.
+                    $mapFloors = $floors->filter(fn ($f) => $placedByFloor->has($f->id))->values();
                 @endphp
                 <div id="tableGrid">
-                    @if($placed->count())
+                    @if($mapFloors->count())
                     <div class="map-legend">🟢 tap an available table · ⬜ unavailable</div>
-                    <div class="res-map-wrap">
+
+                    @if($mapFloors->count() > 1)
+                    <div class="floor-pills" id="floorPills">
+                        @foreach($mapFloors as $i => $floor)
+                        <button type="button" class="floor-pill {{ $i === 0 ? 'active' : '' }}" data-floor="{{ $floor->id }}">{{ $floor->name }}</button>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    @foreach($mapFloors as $i => $floor)
+                    <div class="res-map-wrap floor-map" data-floor="{{ $floor->id }}" style="{{ $i === 0 ? '' : 'display:none' }}">
                         <div class="res-map">
-                            @foreach($placed as $t)
+                            @foreach($placedByFloor->get($floor->id) as $t)
                             <div class="table-card map-card disabled" data-table-id="{{ $t->id }}" data-capacity="{{ $t->capacity }}" style="grid-column:{{ $t->pos_x + 1 }};grid-row:{{ $t->pos_y + 1 }};">
                                 <div class="tname">{{ $t->name }}</div>
                                 <div class="tcap">👥 {{ $t->capacity }}</div>
@@ -110,10 +126,11 @@
                             @endforeach
                         </div>
                     </div>
+                    @endforeach
                     @endif
 
                     @if($unplaced->count())
-                    @if($placed->count())<div class="res-list-label">Other tables</div>@endif
+                    @if($mapFloors->count())<div class="res-list-label">Other tables</div>@endif
                     <div class="tables">
                         @foreach($unplaced as $t)
                         <div class="table-card disabled" data-table-id="{{ $t->id }}" data-capacity="{{ $t->capacity }}">
@@ -210,6 +227,20 @@
 
     dateInput.addEventListener('change', refreshTables);
     guestsInput.addEventListener('change', refreshTables);
+
+    // Floor switcher: show one floor's map at a time (availability still spans all).
+    const floorPills = document.getElementById('floorPills');
+    if (floorPills) {
+        floorPills.addEventListener('click', e => {
+            const pill = e.target.closest('.floor-pill');
+            if (!pill) return;
+            const floor = pill.dataset.floor;
+            floorPills.querySelectorAll('.floor-pill').forEach(p => p.classList.toggle('active', p === pill));
+            document.querySelectorAll('.floor-map').forEach(m => {
+                m.style.display = m.dataset.floor === floor ? '' : 'none';
+            });
+        });
+    }
 
     // Restore old() slot selection after a validation redirect.
     if (timeInput.value) {

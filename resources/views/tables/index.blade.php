@@ -11,23 +11,35 @@
 
 @php
     $statusColor = fn ($s) => $s === 'available' ? '#27ae60' : ($s === 'occupied' ? '#c0392b' : '#2980b9');
-    $fpPlaced = $tables->filter(fn ($t) => ! is_null($t->pos_x) && ! is_null($t->pos_y));
-    $fpUnplaced = $tables->filter(fn ($t) => is_null($t->pos_x) || is_null($t->pos_y));
-    $fpRows = max(6, ($fpPlaced->max('pos_y') ?? -1) + 2);
-    $fpCellMap = [];
-    foreach ($fpPlaced as $t) { $fpCellMap[$t->pos_x.','.$t->pos_y] = $t; }
+    // A table is placed only when it has a floor AND both coordinates.
+    $isPlaced = fn ($t) => ! is_null($t->floor_id) && ! is_null($t->pos_x) && ! is_null($t->pos_y);
+    $fpUnplaced = $tables->filter(fn ($t) => ! $isPlaced($t));
+    $placedByFloor = $tables->filter($isPlaced)->groupBy('floor_id');
 @endphp
 
 <div class="fp-section">
     <div class="fp-bar">
         <div>
             <h2 class="fp-title">Floor Plan</h2>
-            <p class="fp-sub">Drag tables onto the grid to match your room. Drag a table back to the tray to unplace it.</p>
+            <p class="fp-sub">Pick a floor, then drag tables onto its grid. Drag a table back to the tray to unplace it.</p>
         </div>
         <div class="fp-actions">
             <span id="fpDirty" class="fp-dirty">Unsaved changes</span>
             <button class="btn btn-gold" id="fpSave"><i class="fas fa-save"></i> Save Layout</button>
         </div>
+    </div>
+
+    <div class="fp-tabs" id="fpTabs">
+        @foreach($floors as $i => $floor)
+        <div class="fp-tab {{ $i === 0 ? 'active' : '' }}" data-floor="{{ $floor->id }}">
+            <span class="fp-tab-name">{{ $floor->name }}</span>
+            <form method="POST" action="{{ route('floors.destroy', $floor->id) }}" class="fp-tab-del-form" onsubmit="return confirm('Delete floor &quot;{{ $floor->name }}&quot;? It must have no tables placed on it.')">
+                @csrf @method('DELETE')
+                <button type="submit" class="fp-tab-del" title="Delete floor"><i class="fas fa-times"></i></button>
+            </form>
+        </div>
+        @endforeach
+        <button type="button" class="fp-tab-add" onclick="openModal('addFloorModal')"><i class="fas fa-plus"></i> Add Floor</button>
     </div>
 
     <div class="fp-stage">
@@ -43,21 +55,31 @@
         </div>
 
         <div class="fp-grid-scroll">
-            <div class="fp-grid" id="fpGrid">
-                @for($y = 0; $y < $fpRows; $y++)
-                    @for($x = 0; $x < 12; $x++)
-                    <div class="fp-cell" data-x="{{ $x }}" data-y="{{ $y }}">
-                        @isset($fpCellMap["$x,$y"])
-                        @php $t = $fpCellMap["$x,$y"]; @endphp
-                        <div class="fp-chip" draggable="true" data-id="{{ $t->id }}" data-cap="{{ $t->capacity }}" data-x="{{ $x }}" data-y="{{ $y }}" style="border-left-color:{{ $statusColor($t->status) }}">
-                            <span class="fp-chip-name">{{ $t->name }}</span>
-                            <span class="fp-chip-cap">👥 {{ $t->capacity }}</span>
+            @forelse($floors as $i => $floor)
+                @php
+                    $floorTables = $placedByFloor->get($floor->id, collect());
+                    $fpRows = max(6, ($floorTables->max('pos_y') ?? -1) + 2);
+                    $cellMap = [];
+                    foreach ($floorTables as $t) { $cellMap[$t->pos_x.','.$t->pos_y] = $t; }
+                @endphp
+                <div class="fp-grid" data-floor="{{ $floor->id }}" style="{{ $i === 0 ? '' : 'display:none' }}">
+                    @for($y = 0; $y < $fpRows; $y++)
+                        @for($x = 0; $x < 12; $x++)
+                        <div class="fp-cell" data-x="{{ $x }}" data-y="{{ $y }}">
+                            @isset($cellMap["$x,$y"])
+                            @php $t = $cellMap["$x,$y"]; @endphp
+                            <div class="fp-chip" draggable="true" data-id="{{ $t->id }}" data-cap="{{ $t->capacity }}" data-x="{{ $x }}" data-y="{{ $y }}" data-floor="{{ $floor->id }}" style="border-left-color:{{ $statusColor($t->status) }}">
+                                <span class="fp-chip-name">{{ $t->name }}</span>
+                                <span class="fp-chip-cap">👥 {{ $t->capacity }}</span>
+                            </div>
+                            @endisset
                         </div>
-                        @endisset
-                    </div>
+                        @endfor
                     @endfor
-                @endfor
-            </div>
+                </div>
+            @empty
+                <div class="fp-no-floor">No floors yet. Click “Add Floor” to create one.</div>
+            @endforelse
         </div>
     </div>
 </div>
@@ -102,6 +124,22 @@
     </div>
 </div>
 
+<!-- Add Floor Modal -->
+<div class="modal-overlay" id="addFloorModal">
+    <div class="modal">
+        <div class="modal-header"><div class="modal-title">Add Floor</div><button class="modal-close" onclick="closeModal('addFloorModal')"><i class="fas fa-times"></i></button></div>
+        <form method="POST" action="{{ route('floors.store') }}">@csrf
+        <div class="modal-body">
+            <div class="form-group"><label class="form-label">Floor Name</label><input name="name" class="form-control" required maxlength="50" placeholder="e.g. Lantai 1, Rooftop, Outdoor"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeModal('addFloorModal')">Cancel</button>
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Add Floor</button>
+        </div>
+        </form>
+    </div>
+</div>
+
 <!-- Edit Modal -->
 <div class="modal-overlay" id="editTableModal">
     <div class="modal">
@@ -140,11 +178,12 @@ function openEditTable(t) {
 </script>
 <script>
 (function () {
-    const grid    = document.getElementById('fpGrid');
     const tray    = document.getElementById('fpTray');
     const saveBtn = document.getElementById('fpSave');
     const dirtyEl = document.getElementById('fpDirty');
-    if (!grid) return;
+    const tabs    = document.getElementById('fpTabs');
+    const grids   = Array.from(document.querySelectorAll('.fp-grid'));
+    if (!grids.length || !tray) return;
 
     const CSRF     = document.querySelector('meta[name=csrf-token]').content;
     const SAVE_URL = "{{ route('tables.layout') }}";
@@ -156,6 +195,18 @@ function openEditTable(t) {
         if (empty) empty.style.display = tray.querySelector('.fp-chip') ? 'none' : '';
     }
 
+    // ---- Floor tabs: show one grid at a time ----
+    if (tabs) {
+        tabs.addEventListener('click', e => {
+            const tab = e.target.closest('.fp-tab');
+            if (!tab || e.target.closest('.fp-tab-del-form')) return; // let the delete form submit
+            const floor = tab.dataset.floor;
+            tabs.querySelectorAll('.fp-tab').forEach(t => t.classList.toggle('active', t === tab));
+            grids.forEach(g => { g.style.display = g.dataset.floor === floor ? '' : 'none'; });
+        });
+    }
+
+    // ---- Drag & drop ----
     document.addEventListener('dragstart', e => {
         const chip = e.target.closest('.fp-chip');
         if (!chip) return;
@@ -175,19 +226,23 @@ function openEditTable(t) {
         el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
     }
 
-    grid.querySelectorAll('.fp-cell').forEach(cell => {
-        allowDrop(cell);
-        cell.addEventListener('drop', e => {
-            e.preventDefault();
-            cell.classList.remove('drag-over');
-            if (!dragged) return;
-            const occupant = cell.querySelector('.fp-chip');
-            if (occupant && occupant !== dragged) return; // cell taken — reject
-            cell.appendChild(dragged);
-            dragged.dataset.x = cell.dataset.x;
-            dragged.dataset.y = cell.dataset.y;
-            syncTrayEmpty();
-            markDirty();
+    grids.forEach(grid => {
+        const floor = grid.dataset.floor;
+        grid.querySelectorAll('.fp-cell').forEach(cell => {
+            allowDrop(cell);
+            cell.addEventListener('drop', e => {
+                e.preventDefault();
+                cell.classList.remove('drag-over');
+                if (!dragged) return;
+                const occupant = cell.querySelector('.fp-chip');
+                if (occupant && occupant !== dragged) return; // cell taken — reject
+                cell.appendChild(dragged);
+                dragged.dataset.x = cell.dataset.x;
+                dragged.dataset.y = cell.dataset.y;
+                dragged.dataset.floor = floor;
+                syncTrayEmpty();
+                markDirty();
+            });
         });
     });
 
@@ -199,6 +254,7 @@ function openEditTable(t) {
         tray.appendChild(dragged);
         delete dragged.dataset.x;
         delete dragged.dataset.y;
+        delete dragged.dataset.floor;
         syncTrayEmpty();
         markDirty();
     });
@@ -211,10 +267,12 @@ function openEditTable(t) {
         add('_token', CSRF);
         add('_method', 'PATCH');
         let idx = 0;
-        document.querySelectorAll('.fp-chip').forEach(chip => {
+        // Collect every chip once (tray + all grids).
+        document.querySelectorAll('#fpTray .fp-chip, .fp-grid .fp-chip').forEach(chip => {
             add(`positions[${idx}][id]`, chip.dataset.id);
             add(`positions[${idx}][pos_x]`, chip.dataset.x ?? '');
             add(`positions[${idx}][pos_y]`, chip.dataset.y ?? '');
+            add(`positions[${idx}][floor_id]`, chip.dataset.floor ?? '');
             idx++;
         });
         document.body.appendChild(form);
@@ -232,6 +290,17 @@ function openEditTable(t) {
     .fp-actions{display:flex;align-items:center;gap:12px;}
     .fp-dirty{display:none;color:#c9a84c;font-size:.8rem;}
     .fp-dirty.show{display:inline;}
+    .fp-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;}
+    .fp-tab{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:rgba(255,255,255,.02);}
+    .fp-tab.active{background:var(--surface);border-color:#c9a84c;}
+    .fp-tab-name{font-size:.85rem;color:var(--cream);font-weight:600;}
+    .fp-tab.active .fp-tab-name{color:#c9a84c;}
+    .fp-tab-del-form{display:inline;margin:0;}
+    .fp-tab-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.7rem;padding:2px;line-height:1;}
+    .fp-tab-del:hover{color:#c0392b;}
+    .fp-tab-add{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px dashed var(--border);border-radius:4px;cursor:pointer;background:none;color:var(--muted);font-size:.82rem;font-family:inherit;}
+    .fp-tab-add:hover{border-color:#c9a84c;color:#c9a84c;}
+    .fp-no-floor{color:var(--muted);font-size:.85rem;font-style:italic;padding:30px;text-align:center;}
     .fp-stage{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
     .fp-tray{flex:0 0 180px;border:1px dashed var(--border);padding:10px;min-height:120px;}
     .fp-tray.drag-over,.fp-cell.drag-over{outline:2px dashed #c9a84c;outline-offset:-2px;}

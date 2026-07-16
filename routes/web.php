@@ -86,6 +86,9 @@ Route::middleware(['auth', 'role:Admin,Kasir'])->group(function () {
     Route::get('/tables/qr-sheet', [TableController::class, 'qrSheet'])->name('tables.qr-sheet');
     // Floor-plan layout save — declared before the resource so it isn't shadowed by tables.update.
     Route::patch('/tables/layout', [TableController::class, 'saveLayout'])->name('tables.layout');
+    // Floors: named areas of the map (e.g. Lantai 1, Rooftop).
+    Route::post('/floors', [TableController::class, 'storeFloor'])->name('floors.store');
+    Route::delete('/floors/{id}', [TableController::class, 'destroyFloor'])->name('floors.destroy');
     Route::resource('tables', TableController::class)->except(['create', 'show', 'edit']);
     Route::get('/tables/{id}/qr', [TableController::class, 'generateQR'])->name('tables.qr');
     Route::resource('reservations', ReservationController::class)->except(['create', 'show', 'edit']);

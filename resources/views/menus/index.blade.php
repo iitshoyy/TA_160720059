@@ -25,10 +25,17 @@
 <div class="card">
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Availability</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Availability</th><th>Actions</th></tr></thead>
             <tbody>
                 @forelse($menus as $menu)
                 <tr>
+                    <td>
+                        @if($menu->image)
+                        <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->name }}" class="menu-thumb">
+                        @else
+                        <span class="menu-thumb menu-thumb-empty"><i class="fas fa-utensils"></i></span>
+                        @endif
+                    </td>
                     <td class="fw-500 text-cream">{{ $menu->name }}</td>
                     <td>{{ $menu->category->name ?? '-' }}</td>
                     <td class="text-gold fw-600">Rp {{ number_format($menu->price) }}</td>
@@ -53,7 +60,7 @@
                     </td>
                 </tr>
                 @empty
-                <x-empty-state colspan="5" icon="fas fa-utensils" message="No menu items found" />
+                <x-empty-state colspan="6" icon="fas fa-utensils" message="No menu items found" />
                 @endforelse
             </tbody>
         </table>
@@ -65,7 +72,7 @@
 <div class="modal-overlay" id="addMenuModal">
     <div class="modal">
         <div class="modal-header"><div class="modal-title">Add Menu Item</div><button class="modal-close" onclick="closeModal('addMenuModal')"><i class="fas fa-times"></i></button></div>
-        <form method="POST" action="{{ route('menus.store') }}">@csrf
+        <form method="POST" action="{{ route('menus.store') }}" enctype="multipart/form-data">@csrf
         <div class="modal-body">
             <div class="form-group"><label class="form-label">Name</label><input name="name" class="form-control" required placeholder="e.g. Nasi Goreng"></div>
             <div class="form-row">
@@ -78,6 +85,12 @@
                 <div class="form-group"><label class="form-label">Price (Rp)</label><input type="number" name="price" class="form-control" required placeholder="0"></div>
             </div>
             <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2" placeholder="Optional description..."></textarea></div>
+            <div class="form-group">
+                <label class="form-label">Photo</label>
+                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this,'addImgPreview')">
+                <div class="img-preview" id="addImgPreview" style="display:none;"><img src="" alt="preview"></div>
+                <small style="color:var(--muted);font-size:.75rem;">JPG/PNG, max 2 MB. Square photos look best.</small>
+            </div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-outline" onclick="closeModal('addMenuModal')">Cancel</button>
@@ -91,7 +104,7 @@
 <div class="modal-overlay" id="editMenuModal">
     <div class="modal">
         <div class="modal-header"><div class="modal-title">Edit Menu Item</div><button class="modal-close" onclick="closeModal('editMenuModal')"><i class="fas fa-times"></i></button></div>
-        <form method="POST" id="editMenuForm">@csrf @method('PUT')
+        <form method="POST" id="editMenuForm" enctype="multipart/form-data">@csrf @method('PUT')
         <div class="modal-body">
             <div class="form-group"><label class="form-label">Name</label><input name="name" id="editName" class="form-control" required></div>
             <div class="form-row">
@@ -103,6 +116,12 @@
                 <div class="form-group"><label class="form-label">Price (Rp)</label><input type="number" name="price" id="editPrice" class="form-control" required></div>
             </div>
             <div class="form-group"><label class="form-label">Description</label><textarea name="description" id="editDesc" class="form-control" rows="2"></textarea></div>
+            <div class="form-group">
+                <label class="form-label">Photo</label>
+                <div class="img-preview" id="editImgPreview" style="display:none;"><img src="" alt="preview"></div>
+                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this,'editImgPreview')">
+                <small style="color:var(--muted);font-size:.75rem;">Upload a new file to replace the current photo. Square photos look best.</small>
+            </div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-outline" onclick="closeModal('editMenuModal')">Cancel</button>
@@ -131,13 +150,33 @@
 @endsection
 @push('scripts')
 <script>
+const STORAGE_BASE = "{{ asset('storage') }}/";
+
 function openEdit(m) {
     document.getElementById('editMenuForm').action = '/menus/' + m.id;
     document.getElementById('editName').value     = m.name;
     document.getElementById('editPrice').value    = m.price;
     document.getElementById('editDesc').value     = m.description || '';
     document.getElementById('editCategory').value = m.categoryMenus_id;
+
+    const prev = document.getElementById('editImgPreview');
+    const fileInput = prev.nextElementSibling;
+    fileInput.value = '';
+    if (m.image) {
+        prev.querySelector('img').src = STORAGE_BASE + m.image;
+        prev.style.display = '';
+    } else {
+        prev.style.display = 'none';
+    }
     openModal('editMenuModal');
+}
+
+function previewImage(input, previewId) {
+    const prev = document.getElementById(previewId);
+    const file = input.files && input.files[0];
+    if (!file) { return; }
+    prev.querySelector('img').src = URL.createObjectURL(file);
+    prev.style.display = '';
 }
 
 const INGREDIENTS = @json($ingredients);
@@ -172,4 +211,12 @@ async function openRecipe(id, name) {
     openModal('recipeModal');
 }
 </script>
+@endpush
+@push('styles')
+<style>
+    .menu-thumb{width:44px;height:44px;object-fit:cover;border:1px solid var(--border);border-radius:4px;display:inline-block;}
+    .menu-thumb-empty{display:inline-flex;align-items:center;justify-content:center;color:var(--muted);background:rgba(255,255,255,.03);}
+    .img-preview{margin:8px 0;}
+    .img-preview img{width:96px;height:96px;object-fit:cover;border:1px solid var(--border);border-radius:6px;}
+</style>
 @endpush

@@ -92,7 +92,8 @@
             gap: 10px;
             align-items: center;
         }
-        .menu-emoji { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
+        .menu-emoji { font-size: 1.8rem; flex-shrink: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .menu-photo { width: 48px; height: 48px; flex-shrink: 0; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
         .menu-info { flex: 1; }
         .menu-info .name { font-weight: 600; font-size: 0.92rem; }
         .menu-info .desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
@@ -179,7 +180,11 @@
         @foreach($catMenus as $menu)
         @php($cap = $menu->stockCapacity())
         <div class="menu-card" @if($cap <= 0) style="opacity:0.5;" @endif>
+            @if($menu->image)
+            <img class="menu-photo" src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->name }}">
+            @else
             <div class="menu-emoji">🍽️</div>
+            @endif
             <div class="menu-info">
                 <div class="name">{{ $menu->name }}</div>
                 @if($menu->description)<div class="desc">{{ Str::limit($menu->description, 60) }}</div>@endif

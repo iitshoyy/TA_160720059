@@ -119,10 +119,11 @@ class ReservationController extends Controller
     public function publicForm()
     {
         // Pass ALL tables (not just status=available) — availability is per date+slot, computed client-side.
-        $tables = Table::orderBy('name')->get(['id', 'name', 'capacity', 'pos_x', 'pos_y']);
+        $tables = Table::orderBy('name')->get(['id', 'name', 'capacity', 'floor_id', 'pos_x', 'pos_y']);
+        $floors = \App\Models\Floor::orderBy('id')->get();
         $slots = self::SLOTS;
 
-        return view('customer.reservation', compact('tables', 'slots'));
+        return view('customer.reservation', compact('tables', 'floors', 'slots'));
     }
 
     public function availability(Request $req)

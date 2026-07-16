@@ -8,6 +8,7 @@ use App\Models\Ingridient;
 use App\Models\Menu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller {
     public function index(Request $req) {
@@ -21,13 +22,26 @@ class MenuController extends Controller {
     }
 
     public function store(Request $req) {
-        $req->validate(['name'=>'required','price'=>'required|numeric','categoryMenus_id'=>'required']);
-        Menu::create($req->only(['name','description','price','categoryMenus_id']) + ['availability'=>1]);
+        $req->validate(['name'=>'required','price'=>'required|numeric','categoryMenus_id'=>'required','image'=>'nullable|image|max:2048']);
+        $data = $req->only(['name','description','price','categoryMenus_id']) + ['availability'=>1];
+        if ($req->hasFile('image')) {
+            $data['image'] = $req->file('image')->store('menus', 'public');
+        }
+        Menu::create($data);
         return back()->with('success','Menu item added!');
     }
 
     public function update(Request $req, $id) {
-        Menu::findOrFail($id)->update($req->only(['name','description','price','categoryMenus_id']));
+        $req->validate(['name'=>'required','price'=>'required|numeric','categoryMenus_id'=>'required','image'=>'nullable|image|max:2048']);
+        $menu = Menu::findOrFail($id);
+        $data = $req->only(['name','description','price','categoryMenus_id']);
+        if ($req->hasFile('image')) {
+            if ($menu->image) {
+                Storage::disk('public')->delete($menu->image);
+            }
+            $data['image'] = $req->file('image')->store('menus', 'public');
+        }
+        $menu->update($data);
         return back()->with('success','Menu item updated!');
     }
 
@@ -35,6 +49,9 @@ class MenuController extends Controller {
         $menu = Menu::findOrFail($id);
         if ($menu->orderDetails()->exists()) {
             return back()->with('error', 'Cannot delete "'.$menu->name.'" — it appears in past orders.');
+        }
+        if ($menu->image) {
+            Storage::disk('public')->delete($menu->image);
         }
         $menu->components()->delete();
         $menu->delete();
